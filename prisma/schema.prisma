@@ -1,0 +1,210 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// -------------------------------------------------------------
+// CORE & SETTINGS
+// -------------------------------------------------------------
+model User {
+  id             String   @id @default(cuid())
+  name           String?
+  email          String   @unique
+  passwordHash   String
+  role           String   @default("ADMIN") // ADMIN, OPERATOR, FINANCE
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Setting {
+  id        String   @id @default(cuid())
+  key       String   @unique // ex: GLOBAL_MARKUP, MIN_PROFIT_MARGIN
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// -------------------------------------------------------------
+// INGREDIENTS (SUPPLY)
+// -------------------------------------------------------------
+model Ingredient {
+  id            String   @id @default(cuid())
+  name          String
+  category      String?  // Laticínios, Secos, Frutas, Embalagem
+  unitMeasure   String   // kg, g, l, ml, un
+  currentStock  Float    @default(0)
+  minStock      Float    @default(0)
+  unitCost      Float    @default(0) // Custo em Reais pela menor unidade de medida cadastrada (ex: custo por grama)
+  supplier      String?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  movements     IngredientStockMovement[]
+  recipeItems   RecipeItem[]
+}
+
+model IngredientStockMovement {
+  id                      String   @id @default(cuid())
+  ingredientId            String
+  type                    String   // "IN", "OUT", "PROD_USE", "ADJUST"
+  quantity                Float
+  unitCostAtTransaction   Float?   // Qual o custo desse lote quando entrou (para calculo do preco medio)
+  date                    DateTime @default(now())
+  notes                   String?
+  createdAt               DateTime @default(now())
+  
+  ingredient              Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Restrict)
+}
+
+// -------------------------------------------------------------
+// FLAVORS & RECIPES (BOM - BILL OF MATERIALS)
+// -------------------------------------------------------------
+model Flavor {
+  id                   String   @id @default(cuid())
+  name                 String   @unique
+  description          String?
+  suggestedSellPrice   Float    @default(0)
+  active               Boolean  @default(true)
+  notes                String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  recipes              Recipe[]
+  productionBatches    ProductionBatch[]
+  productMovements     ProductStockMovement[]
+  saleItems            SaleItem[]
+  stock                FinishedProductStock?
+}
+
+// O histórico do custo, que será recalculado conforme Ingredients unitCost muda
+model Recipe {
+  id                 String   @id @default(cuid())
+  flavorId           String
+  yieldUnits         Int      // Quantos geladinhos rendem essa receita inteira
+  estimatedTotalCost Float    @default(0) // Cache do sumatório na hora de mostrar pro user
+  estimatedUnitCost  Float    @default(0) // TotalCost / yields
+  active             Boolean  @default(true) // Só pode ter 1 receita ativa por sabor
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  flavor             Flavor   @relation(fields: [flavorId], references: [id], onDelete: Cascade)
+  items              RecipeItem[]
+  productionBatches  ProductionBatch[] // Trava: Uma fornada precisa de qual receita foi usada
+}
+
+model RecipeItem {
+  id                 String   @id @default(cuid())
+  recipeId           String
+  ingredientId       String
+  quantity           Float    // Quantidade da unit_measure estipulada no Ingredient usado nessa receita 
+  
+  recipe             Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  ingredient         Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Restrict)
+
+  @@index([recipeId])
+}
+
+// -------------------------------------------------------------
+// PRODUCTION & STOCKS 
+// -------------------------------------------------------------
+model ProductionBatch {
+  id                    String   @id @default(cuid())
+  flavorId              String
+  recipeId              String
+  quantityProduced      Int
+  totalProductionCost   Float    // Foto Exata do custo para fazer essa fornada
+  date                  DateTime @default(now())
+  notes                 String?
+  createdAt             DateTime @default(now())
+  
+  flavor                Flavor   @relation(fields: [flavorId], references: [id], onDelete: Restrict)
+  recipe                Recipe   @relation(fields: [recipeId], references: [id], onDelete: Restrict)
+}
+
+// Abordagem Singleton por Sabor para evitar views complexas para consultar saldo rápido
+model FinishedProductStock {
+  id          String   @id @default(cuid())
+  flavorId    String   @unique
+  quantity    Int      @default(0)
+  updatedAt   DateTime @updatedAt
+  
+  flavor      Flavor   @relation(fields: [flavorId], references: [id], onDelete: Cascade)
+}
+
+model ProductStockMovement {
+  id          String   @id @default(cuid())
+  flavorId    String
+  type        String   // "PROD_IN", "SALE_OUT", "ADJUST", "LOSE_OUT"
+  quantity    Int
+  date        DateTime @default(now())
+  notes       String?
+  createdAt   DateTime @default(now())
+  
+  flavor      Flavor   @relation(fields: [flavorId], references: [id], onDelete: Restrict)
+}
+
+// -------------------------------------------------------------
+// SALES LOG (PDV)
+// -------------------------------------------------------------
+model Sale {
+  id              String   @id @default(cuid())
+  saleDate        DateTime @default(now())
+  totalAmount     Float
+  discountAmount  Float    @default(0)
+  paymentMethod   String?  // PIX, CREDIT, CASH
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  items           SaleItem[]
+}
+
+model SaleItem {
+  id                 String   @id @default(cuid())
+  saleId             String
+  flavorId           String
+  quantity           Int
+  unitSellPrice      Float    // Preço cobrado no dia
+  unitCostAtSaleTime Float    // O custo real do sabor NESTE exato momento travado na base
+  totalMarginLiquid  Float    // (unitSellPrice - unitCostAtSaleTime) * quantity
+  
+  sale               Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  flavor             Flavor   @relation(fields: [flavorId], references: [id], onDelete: Restrict)
+}
+
+// -------------------------------------------------------------
+// EXPENSES (OPEX - DRE FIXO)
+// -------------------------------------------------------------
+model ExpenseCategory {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  expenses    Expense[]
+}
+
+model Expense {
+  id                String   @id @default(cuid())
+  expenseCategoryId String
+  description       String
+  amount            Float
+  expenseDate       DateTime @default(now())
+  isRecurring       Boolean  @default(false)
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  category          ExpenseCategory @relation(fields: [expenseCategoryId], references: [id], onDelete: Restrict)
+}
