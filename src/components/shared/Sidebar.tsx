@@ -1,9 +1,12 @@
 "use client"
 
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { usePathname } from "next/navigation"
 import { Home, Package, Activity, LogOut, DollarSign, IceCream2, BarChart3, Receipt } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { logoutAction } from "@/server/actions/auth"
+import { toast } from "sonner"
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: Home },
@@ -17,6 +20,13 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname()
+  const router = useRouter()
+
+  async function handleLogout() {
+    await logoutAction()
+    toast.success("Você saiu com segurança.")
+    router.push("/login")
+  }
 
   return (
     <div
@@ -86,17 +96,16 @@ export function Sidebar() {
         })}
       </div>
 
-      {/* Footer / Logout */}
       <div className="p-3 border-t" style={{ borderColor: "oklch(1 0 0 / 10%)" }}>
-        <Link
-          href="/auth"
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 text-white/50 hover:text-white/90"
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 text-white/50 hover:text-white/90"
           onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = "oklch(1 0 0 / 8%)" }}
           onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "" }}
         >
           <LogOut size={17} />
           Sair
-        </Link>
+        </button>
       </div>
     </div>
   )
