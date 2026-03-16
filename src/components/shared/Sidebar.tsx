@@ -4,6 +4,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { usePathname } from "next/navigation"
 import { Home, Package, Activity, LogOut, DollarSign, IceCream2, BarChart3, Receipt } from "lucide-react"
+import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { logoutAction } from "@/server/actions/auth"
 import { toast } from "sonner"
@@ -36,25 +37,16 @@ export function Sidebar() {
       }}
     >
       {/* Logo */}
-      <div className="p-6 flex items-center gap-3">
-        <div
-          className="p-2 rounded-xl shadow-lg"
-          style={{ background: "linear-gradient(135deg, oklch(0.76 0.14 65), oklch(0.68 0.17 55))" }}
-        >
-          <IceCream2 size={22} className="text-white" />
-        </div>
-        <div>
-          <h1 className="text-lg font-bold text-white tracking-tight leading-tight" style={{ fontFamily: "var(--font-display)" }}>
-            Maria Doce
-          </h1>
-          <p className="text-xs font-medium" style={{ color: "oklch(0.76 0.14 65)" }}>
-            Geladinhos Gourmet
-          </p>
-        </div>
+      <div className="px-5 py-4 flex flex-col items-center border-b" style={{ borderColor: "oklch(1 0 0 / 10%)" }}>
+        <Image
+          src="/logo.jpg"
+          alt="Maria Doce Gelado"
+          width={160}
+          height={90}
+          className="object-contain drop-shadow-md"
+          priority
+        />
       </div>
-
-      {/* Divisor */}
-      <div className="mx-4 h-px" style={{ background: "oklch(1 0 0 / 10%)" }} />
 
       {/* Navegação */}
       <div className="flex-1 px-3 py-4 space-y-1">

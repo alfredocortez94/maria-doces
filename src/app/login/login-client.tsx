@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { IceCream2, Lock, Mail, Eye, EyeOff, ShieldCheck } from "lucide-react"
+import { Lock, Mail, Eye, EyeOff, ShieldCheck } from "lucide-react"
+import Image from "next/image"
 import { toast } from "sonner"
 import { loginAction } from "@/server/actions/auth"
 
@@ -48,15 +49,16 @@ export function LoginClient() {
         <div className="absolute top-1/3 right-0 w-48 h-48 rounded-full bg-white/5" />
 
         <div className="relative z-10 text-center">
-          <div className="w-24 h-24 rounded-3xl bg-white/20 backdrop-blur flex items-center justify-center mx-auto mb-8 shadow-xl">
-            <IceCream2 size={48} className="text-white" />
+          <div className="w-48 mx-auto mb-8">
+            <Image
+              src="/logo.jpg"
+              alt="Maria Doce Gelado"
+              width={240}
+              height={180}
+              className="object-contain drop-shadow-2xl"
+              priority
+            />
           </div>
-          <h1 className="text-4xl font-black text-white mb-3 leading-tight">
-            Maria Doce<br />Gelado
-          </h1>
-          <p className="text-pink-200 text-base max-w-xs mx-auto leading-relaxed">
-            Sistema de gestão integrado para controle financeiro, produção e vendas.
-          </p>
 
           <div className="mt-12 grid grid-cols-2 gap-4 text-left">
             {[
@@ -80,9 +82,14 @@ export function LoginClient() {
 
           {/* Logo mobile */}
           <div className="lg:hidden flex justify-center mb-8">
-            <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center shadow-xl">
-              <IceCream2 size={36} className="text-white" />
-            </div>
+            <Image
+              src="/logo.jpg"
+              alt="Maria Doce Gelado"
+              width={180}
+              height={100}
+              className="object-contain"
+              priority
+            />
           </div>
 
           {/* Cabeçalho */}

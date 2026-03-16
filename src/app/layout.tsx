@@ -19,6 +19,11 @@ const jost = Jost({
 export const metadata: Metadata = {
   title: "Maria Doce Gelado",
   description: "Sistema Administrativo - Receitas, Custos e PDV",
+  icons: {
+    icon: "/favicon.jpg",
+    shortcut: "/favicon.jpg",
+    apple: "/favicon.jpg",
+  },
 };
 
 export default function RootLayout({
