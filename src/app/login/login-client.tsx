@@ -2,95 +2,174 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { IceCream2, Lock, Mail } from "lucide-react"
+import { IceCream2, Lock, Mail, Eye, EyeOff, ShieldCheck } from "lucide-react"
 import { toast } from "sonner"
 import { loginAction } from "@/server/actions/auth"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
 
 export function LoginClient() {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
 
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    if (!email.trim() || !password) {
+      toast.error("Preencha o e-mail e a senha.")
+      return
+    }
+
     setIsSubmitting(true)
+    const formData = new FormData()
+    formData.append("email", email.trim())
+    formData.append("password", password)
+
     const res = await loginAction(formData)
     setIsSubmitting(false)
 
     if (res.success) {
-      toast.success("Login efetuado com sucesso!")
+      toast.success("Acesso autorizado. Bem-vindo!")
       router.push("/")
       router.refresh()
     } else {
-      toast.error(res.error)
+      toast.error("E-mail ou senha inválidos.")
     }
   }
 
   return (
-    <div className="min-h-screen bg-pink-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center mb-4 text-pink-500 bg-white w-24 h-24 rounded-full items-center shadow-lg border-4 border-pink-100 mx-auto">
-           <IceCream2 size={48} />
+    <div className="min-h-screen flex font-sans">
+
+      {/* Painel esquerdo decorativo */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-rose-600 via-pink-600 to-fuchsia-700 relative overflow-hidden flex-col items-center justify-center p-12">
+        {/* Círculos decorativos */}
+        <div className="absolute -top-20 -left-20 w-72 h-72 rounded-full bg-white/5" />
+        <div className="absolute -bottom-10 -right-10 w-96 h-96 rounded-full bg-white/5" />
+        <div className="absolute top-1/3 right-0 w-48 h-48 rounded-full bg-white/5" />
+
+        <div className="relative z-10 text-center">
+          <div className="w-24 h-24 rounded-3xl bg-white/20 backdrop-blur flex items-center justify-center mx-auto mb-8 shadow-xl">
+            <IceCream2 size={48} className="text-white" />
+          </div>
+          <h1 className="text-4xl font-black text-white mb-3 leading-tight">
+            Maria Doce<br />Gelado
+          </h1>
+          <p className="text-pink-200 text-base max-w-xs mx-auto leading-relaxed">
+            Sistema de gestão integrado para controle financeiro, produção e vendas.
+          </p>
+
+          <div className="mt-12 grid grid-cols-2 gap-4 text-left">
+            {[
+              { label: "Controle de Produção", sub: "Lotes e ingredientes" },
+              { label: "Gestão de Vendas", sub: "PDV integrado" },
+              { label: "Ficha Técnica", sub: "Custo por receita" },
+              { label: "DRE Automático", sub: "Lucros em tempo real" },
+            ].map(item => (
+              <div key={item.label} className="bg-white/10 backdrop-blur rounded-xl p-4 border border-white/10">
+                <p className="text-white font-semibold text-sm">{item.label}</p>
+                <p className="text-pink-200 text-xs mt-0.5">{item.sub}</p>
+              </div>
+            ))}
+          </div>
         </div>
-        <h2 className="mt-4 text-center text-3xl font-extrabold text-slate-800">
-          Maria Doce Gelado
-        </h2>
-        <p className="mt-2 text-center text-sm text-slate-500 font-medium">
-          Acesso restrito à gestão do negócio
-        </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow-xl border border-pink-100 sm:rounded-2xl sm:px-10">
-          <form action={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-slate-700">Email Admin</label>
-              <div className="mt-1 relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
-                </div>
-                <Input 
-                  name="email" 
-                  type="email" 
-                  required 
-                  className="pl-10 h-12 bg-slate-50 border-slate-200" 
-                  placeholder="admin@mariadoce.com"
-                  defaultValue="admin@mariadoce.com"
+      {/* Painel direito: formulário */}
+      <div className="flex-1 flex flex-col justify-center items-center px-6 py-12 bg-slate-50">
+        <div className="w-full max-w-md">
+
+          {/* Logo mobile */}
+          <div className="lg:hidden flex justify-center mb-8">
+            <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center shadow-xl">
+              <IceCream2 size={36} className="text-white" />
+            </div>
+          </div>
+
+          {/* Cabeçalho */}
+          <div className="mb-8">
+            <h2 className="text-3xl font-black text-slate-800 tracking-tight">Entrar no Sistema</h2>
+            <p className="text-slate-500 mt-2 text-sm">Acesso restrito. Use suas credenciais de administrador.</p>
+          </div>
+
+          {/* Formulário */}
+          <form onSubmit={handleSubmit} className="space-y-5" autoComplete="on">
+
+            {/* Email */}
+            <div className="space-y-1.5">
+              <label htmlFor="email" className="block text-sm font-semibold text-slate-700">E-mail</label>
+              <div className="relative">
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={17} />
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  autoComplete="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="seu@email.com"
+                  className="w-full h-12 pl-10 pr-4 rounded-xl border border-slate-200 bg-white text-slate-800 placeholder-slate-400 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all"
                 />
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-700">Senha</label>
-              <div className="mt-1 relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400" />
-                </div>
-                <Input 
-                  name="password" 
-                  type="password" 
-                  required 
-                  className="pl-10 h-12 bg-slate-50 border-slate-200" 
-                  placeholder="********"
-                  defaultValue="admin123"
+            {/* Senha */}
+            <div className="space-y-1.5">
+              <label htmlFor="password" className="block text-sm font-semibold text-slate-700">Senha</label>
+              <div className="relative">
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={17} />
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  required
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full h-12 pl-10 pr-12 rounded-xl border border-slate-200 bg-white text-slate-800 placeholder-slate-400 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(v => !v)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                  aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                >
+                  {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
+                </button>
               </div>
             </div>
 
-            <div className="bg-blue-50/50 p-3 rounded-lg border border-blue-100 mt-2">
-              <p className="text-xs text-blue-700 leading-tight">
-                <b>Seed Automático MVP:</b> O primeiro acesso no banco vazio configurará automaticamente <b>admin@mariadoce.com</b> com a senha <b>admin123</b>.
-              </p>
-            </div>
-
-            <Button 
-              type="submit" 
-              className="w-full h-12 text-lg font-bold bg-pink-600 hover:bg-pink-500 shadow-lg shadow-pink-900/30 text-white mt-4"
+            {/* Botão */}
+            <button
+              type="submit"
               disabled={isSubmitting}
+              className="w-full h-13 py-3.5 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white font-bold text-base shadow-lg shadow-pink-500/30 transition-all hover:shadow-pink-500/40 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none mt-2"
             >
-              {isSubmitting ? "Autenticando..." : "Entrar no Gestor"}
-            </Button>
+              {isSubmitting ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Verificando...
+                </span>
+              ) : "Entrar no Sistema"}
+            </button>
           </form>
+
+          {/* Aviso de segurança */}
+          <div className="mt-6 flex items-start gap-3 bg-slate-100 rounded-xl p-4 border border-slate-200">
+            <ShieldCheck size={18} className="text-slate-500 shrink-0 mt-0.5" />
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Este sistema é de acesso exclusivo para administradores autorizados.
+              Tentativas de acesso não autorizado são registradas para fins de auditoria.
+            </p>
+          </div>
+
+          <p className="text-center text-xs text-slate-400 mt-6">
+            Maria Doce Gelado © {new Date().getFullYear()} · Todos os direitos reservados
+          </p>
         </div>
       </div>
     </div>
