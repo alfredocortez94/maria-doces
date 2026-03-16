@@ -51,6 +51,9 @@ model IngredientStockMovement {
   notes                 String?
   createdAt             DateTime   @default(now())
   ingredient            Ingredient @relation(fields: [ingredientId], references: [id])
+
+  @@index([ingredientId])
+  @@index([date])
 }
 
 model Flavor {
@@ -105,6 +108,9 @@ model ProductionBatch {
   createdAt           DateTime @default(now())
   flavor              Flavor   @relation(fields: [flavorId], references: [id])
   recipe              Recipe   @relation(fields: [recipeId], references: [id])
+
+  @@index([date])
+  @@index([flavorId])
 }
 
 model FinishedProductStock {
@@ -124,6 +130,9 @@ model ProductStockMovement {
   notes     String?
   createdAt DateTime @default(now())
   flavor    Flavor   @relation(fields: [flavorId], references: [id])
+
+  @@index([flavorId])
+  @@index([date])
 }
 
 model Sale {
@@ -136,6 +145,8 @@ model Sale {
   createdAt      DateTime   @default(now())
   updatedAt      DateTime   @updatedAt
   items          SaleItem[]
+
+  @@index([saleDate])
 }
 
 model SaleItem {
@@ -165,8 +176,12 @@ model Expense {
   amount            Float
   expenseDate       DateTime        @default(now())
   isRecurring       Boolean         @default(false)
+  invoiceRef        String?         // Número da NF ou referência externa
   notes             String?
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
   category          ExpenseCategory @relation(fields: [expenseCategoryId], references: [id])
+
+  @@index([expenseDate])
+  @@index([expenseCategoryId])
 }

@@ -49,12 +49,9 @@ export async function createExpense(formData: FormData) {
     }
 
     const expenseDateStr = formData.get("expenseDate") as string
-    const invoiceRef = formData.get("invoiceRef") as string
-    const notesRaw = formData.get("notes") as string
+    const invoiceRef = (formData.get("invoiceRef") as string) || undefined
+    const notes = (formData.get("notes") as string) || undefined
     const expenseDate = expenseDateStr ? new Date(expenseDateStr) : new Date()
-    
-    // Compõe o campo notes com a referência NF se preenchida
-    const notes = [notesRaw, invoiceRef ? `Ref. NF: ${invoiceRef}` : null].filter(Boolean).join(" | ") || null
 
     await prisma.expense.create({
       data: {
@@ -63,7 +60,8 @@ export async function createExpense(formData: FormData) {
         expenseCategoryId: categoryId,
         expenseDate,
         isRecurring: formData.get("isRecurring") === "on",
-        notes: notes ?? undefined
+        invoiceRef,
+        notes
       }
     })
 
