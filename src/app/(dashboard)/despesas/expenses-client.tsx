@@ -16,14 +16,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { createExpense, deleteExpense } from "@/server/actions/expenses"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
+import type { Expense, ExpenseCategory } from "@/types/domain"
 
+const PAGE_SIZE = 15
 const money = (val: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 2 }).format(val)
 
-export function ExpensesClient({ initialExpenses, categories }: { initialExpenses: any[], categories: any[] }) {
+export function ExpensesClient({ initialExpenses, categories }: { initialExpenses: Expense[], categories: ExpenseCategory[] }) {
   const [isOpen, setIsOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedCat, setSelectedCat] = useState<string>("")
   const [isNewCat, setIsNewCat] = useState(false)
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
 
   async function handleCreate(formData: FormData) {
     if(!isNewCat && !selectedCat) { toast.error("Selecione uma categoria"); return; }
@@ -141,33 +144,47 @@ export function ExpensesClient({ initialExpenses, categories }: { initialExpense
               <TableHead>Data</TableHead>
               <TableHead>Descrição</TableHead>
               <TableHead>Categoria</TableHead>
+              <TableHead>NF / Ref.</TableHead>
               <TableHead className="text-right">Valor</TableHead>
-              <TableHead className="text-right w-[80px]">Ações</TableHead>
+              <TableHead className="text-right w-[60px]">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {initialExpenses.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8 text-slate-500">Nenhuma despesa ou conta cadastrada.</TableCell>
+                <TableCell colSpan={6} className="text-center py-12 text-slate-400">
+                  <Receipt size={28} className="mx-auto mb-2 opacity-30" />
+                  Nenhuma despesa cadastrada. Registre a primeira saída.
+                </TableCell>
               </TableRow>
             ) : (
-              initialExpenses.map((exp) => (
-                <TableRow key={exp.id}>
-                  <TableCell className="text-slate-500 text-sm">{format(new Date(exp.expenseDate), "dd/MM/yyyy", { locale: ptBR })}</TableCell>
+              initialExpenses.slice(0, visibleCount).map((exp) => (
+                <TableRow key={exp.id} className="hover:bg-rose-50/30">
+                  <TableCell className="text-slate-500 text-sm whitespace-nowrap">{format(new Date(exp.expenseDate), "dd/MM/yyyy", { locale: ptBR })}</TableCell>
                   <TableCell>
                     <div className="font-medium text-slate-800">{exp.description}</div>
-                    {exp.isRecurring && <span className="text-[10px] bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded uppercase mt-1">Conta Fixa</span>}
+                    {exp.notes && <div className="text-xs text-slate-400 mt-0.5 truncate max-w-[200px]">{exp.notes}</div>}
+                    {exp.isRecurring && <span className="text-[10px] bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded uppercase mt-1 inline-block">Conta Fixa</span>}
                   </TableCell>
-                  <TableCell className="text-slate-600">{exp.category?.name}</TableCell>
+                  <TableCell className="text-slate-600 text-sm">{exp.category?.name}</TableCell>
+                  <TableCell className="text-slate-400 text-xs">{exp.invoiceRef || "–"}</TableCell>
                   <TableCell className="text-right font-medium text-rose-600">- {money(exp.amount)}</TableCell>
                   <TableCell className="text-right">
-                    <button onClick={() => handleDelete(exp.id)} className="text-slate-400 hover:text-red-500 p-2"><Trash2 size={16} /></button>
+                    <button onClick={() => handleDelete(exp.id)} className="text-slate-400 hover:text-red-500 p-2"><Trash2 size={15} /></button>
                   </TableCell>
                 </TableRow>
               ))
             )}
           </TableBody>
         </Table>
+        {/* Load More */}
+        {visibleCount < initialExpenses.length && (
+          <div className="p-3 border-t border-slate-100 text-center">
+            <Button variant="outline" size="sm" onClick={() => setVisibleCount(v => v + PAGE_SIZE)}>
+              Ver mais ({initialExpenses.length - visibleCount} restantes)
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   )

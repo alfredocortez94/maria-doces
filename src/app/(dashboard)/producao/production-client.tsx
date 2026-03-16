@@ -16,20 +16,22 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { processProductionBatch } from "@/server/actions/production"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
+import type { Flavor, ProductionBatch } from "@/types/domain"
 
+const PAGE_SIZE = 15
 const money = (val: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 2 }).format(val)
 
 export function ProductionClient({ 
   initialHistory, 
   flavorsReadyToProduce 
 }: { 
-  initialHistory: any[], 
-  flavorsReadyToProduce: any[] 
+  initialHistory: ProductionBatch[]
+  flavorsReadyToProduce: Flavor[]
 }) {
-  const [isProduceOpen, setIsProduceOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedFlavorId, setSelectedFlavorId] = useState<string>("")
   const [batchQuantity, setBatchQuantity] = useState<number>(1)
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
 
   // O "Mock" da predição pra mostrar na UI pro usuário não ter medo.
   const previewFlavor = flavorsReadyToProduce.find(f => f.id === selectedFlavorId)
@@ -39,18 +41,15 @@ export function ProductionClient({
   async function handleProduce() {
     if(!selectedFlavorId) return toast.error("Selecione um sabor")
     if(batchQuantity <= 0) return toast.error("A quantidade final não pode ser zero.")
-    
     setIsSubmitting(true)
-    const res = await processProductionBatch(selectedFlavorId, batchQuantity, "Apontamento Rápido via App")
+    const res = await processProductionBatch(selectedFlavorId, batchQuantity, "Apontamento via App")
     setIsSubmitting(false)
-    
     if(res.success) {
-      toast.success("Produção finalizada! O estoque de ingredientes foi reduzido e as unidades estão prontas.")
-      setIsProduceOpen(false)
+      toast.success("Produção finalizada! Estoque de ingredientes reduzido. ✅")
       setSelectedFlavorId("")
       setBatchQuantity(1)
     } else {
-      toast.error(res.error)
+      toast.error(res.error, { duration: 6000 })
     }
   }
 
@@ -139,43 +138,50 @@ export function ProductionClient({
            </div>
            
            <div className="flex-1 overflow-auto">
-             <Table>
-               <TableHeader>
-                 <TableRow className="bg-white hover:bg-white sticky top-0 shadow-sm z-10">
-                   <TableHead>Data Produção</TableHead>
-                   <TableHead>Sabor</TableHead>
-                   <TableHead className="text-right">Un. Feitas</TableHead>
-                   <TableHead className="text-right">CMV Total Consumido (R$)</TableHead>
-                 </TableRow>
-               </TableHeader>
-               <TableBody>
-                 {initialHistory.length === 0 ? (
-                   <TableRow>
-                     <TableCell colSpan={4} className="text-center py-8 text-slate-500">
-                       Nenhuma lote foi rodado ainda. Faça a primeira fornada ao lado.
-                     </TableCell>
-                   </TableRow>
-                 ) : (
-                   initialHistory.map((batch) => (
-                     <TableRow key={batch.id}>
-                       <TableCell className="text-slate-500 text-sm">
-                         {format(new Date(batch.date), "dd/MM/yy 'às' HH:mm", { locale: ptBR })}
-                       </TableCell>
-                       <TableCell className="font-medium text-slate-800">
-                         {batch.flavor.name}
-                       </TableCell>
-                       <TableCell className="text-right font-bold text-pink-600">
-                         +{batch.quantityProduced} <span className="text-xs font-normal text-slate-400">un</span>
-                       </TableCell>
-                       <TableCell className="text-right text-rose-600 tracking-tight font-medium">
-                         - {money(batch.totalProductionCost)}
-                       </TableCell>
-                     </TableRow>
-                   ))
-                 )}
-               </TableBody>
-             </Table>
-           </div>
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-white hover:bg-white sticky top-0 shadow-sm z-10">
+                    <TableHead>Data Produção</TableHead>
+                    <TableHead>Sabor</TableHead>
+                    <TableHead className="text-right">Un. Feitas</TableHead>
+                    <TableHead className="text-right">CMV Consumido (R$)</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {initialHistory.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center py-12 text-slate-400">
+                        <PackageCheck size={28} className="mx-auto mb-2 opacity-30" />
+                        Nenhum lote produzido. Faça a primeira fornada ao lado.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    initialHistory.slice(0, visibleCount).map((batch) => (
+                      <TableRow key={batch.id} className="hover:bg-rose-50/30">
+                        <TableCell className="text-slate-500 text-sm whitespace-nowrap">
+                          {format(new Date(batch.date), "dd/MM/yy 'às' HH:mm", { locale: ptBR })}
+                        </TableCell>
+                        <TableCell className="font-medium text-slate-800">{batch.flavor.name}</TableCell>
+                        <TableCell className="text-right font-bold text-pink-600">
+                          +{batch.quantityProduced} <span className="text-xs font-normal text-slate-400">un</span>
+                        </TableCell>
+                        <TableCell className="text-right text-rose-600 font-medium">
+                          - {money(batch.totalProductionCost)}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+              {/* Load More */}
+              {visibleCount < initialHistory.length && (
+                <div className="p-3 border-t border-slate-100 text-center">
+                  <Button variant="outline" size="sm" onClick={() => setVisibleCount(v => v + PAGE_SIZE)}>
+                    Ver mais ({initialHistory.length - visibleCount} restantes)
+                  </Button>
+                </div>
+              )}
+            </div>
          </div>
       </div>
       
