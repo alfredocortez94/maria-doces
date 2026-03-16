@@ -1,6 +1,15 @@
 import { SignJWT, jwtVerify } from "jose"
 
-const getSecret = () => new TextEncoder().encode(process.env.JWT_SECRET || "default_secret_maria_doce_123_456_789")
+function getSecret(): Uint8Array {
+  const secret = process.env.JWT_SECRET
+  if (!secret) {
+    throw new Error(
+      "[SEGURANÇA CRÍTICA] JWT_SECRET não está definido nas variáveis de ambiente. " +
+      "Defina-o antes de iniciar a aplicação."
+    )
+  }
+  return new TextEncoder().encode(secret)
+}
 
 export async function signToken(payload: any) {
   return new SignJWT(payload)

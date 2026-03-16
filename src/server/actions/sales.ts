@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
+import { requireAuth } from "@/lib/session"
 
 // -------------------------------------------------------------
 // GET RECENT SALES
@@ -34,52 +35,69 @@ export type SaleCartItem = {
 
 export async function processSaleCheckout(cart: SaleCartItem[], paymentMethod: string, discount: number = 0, notes?: string) {
   try {
-    if (cart.length === 0) return { success: false, error: "Carrinho vazio." }
+    // ✅ FIX S3: Verificar autenticação
+    await requireAuth()
 
-    const stockErrors = []
-    let totalGrossAmount = 0
+    if (cart.length === 0) return { success: false, error: "Carrinho vazio." }
+    if (discount < 0) return { success: false, error: "Desconto não pode ser negativo." }
+
+    // Pré-carregar todos os sabores de uma vez (anti N+1)
+    const flavorIds = cart.map(i => i.flavorId)
+    const flavors = await prisma.flavor.findMany({
+      where: { id: { in: flavorIds } },
+      include: {
+        stock: true,
+        recipes: { where: { active: true } }
+      }
+    })
+    const flavorMap = new Map(flavors.map(f => [f.id, f]))
+
+    // Preparar snapshot dos itens
     const snapshotItemsData: any[] = []
+    let totalGrossAmount = 0
 
     for (const item of cart) {
-      if(item.quantity <= 0) continue
+      if (item.quantity <= 0) continue
 
-      const flavor = await prisma.flavor.findUnique({
-        where: { id: item.flavorId },
-        include: { stock: true, recipes: { where: { active: true } } }
-      })
+      const flavor = flavorMap.get(item.flavorId)
+      if (!flavor) throw new Error(`Sabor inválido: ${item.flavorId}`)
 
-      if (!flavor) throw new Error("Item inválido detectado")
-
-      const availableQuantity = flavor.stock?.quantity || 0
-      if (item.quantity > availableQuantity) {
-        stockErrors.push(`Estoque insuficiente de ${flavor.name} (Temos ${availableQuantity}, pedindo ${item.quantity})`)
-      }
-
-      // Snapshot Crucial: Capturamos o custo unitário EXATAMENTE NESTE SEGUNDO pra travar o lucro da venda hoje.
+      // Custo snapshot: usa estimatedUnitCost da receita ativa
       const activeRecipe = flavor.recipes[0]
-      const frozenUnitCost = activeRecipe?.estimatedUnitCost || 0 // Se vender sabor sem receita, o lucro é full(100%), custo 0.
-      
+      const frozenUnitCost = activeRecipe?.estimatedUnitCost || 0
+
       const itemGrossTotal = item.quantity * item.unitSellPrice
       totalGrossAmount += itemGrossTotal
 
-      const itemLiquidProfit = (item.unitSellPrice - frozenUnitCost) * item.quantity
-
       snapshotItemsData.push({
         flavorId: item.flavorId,
+        flavorName: flavor.name, // para mensagens de erro
         quantity: item.quantity,
+        availableQty: flavor.stock?.quantity || 0,
         unitSellPrice: item.unitSellPrice,
         unitCostAtSaleTime: frozenUnitCost,
-        totalMarginLiquid: itemLiquidProfit
+        totalMarginLiquid: (item.unitSellPrice - frozenUnitCost) * item.quantity
       })
     }
 
-    if (stockErrors.length > 0) return { success: false, error: stockErrors.join(" | ") }
+    const finalAmount = Math.max(0, totalGrossAmount - discount)
 
-    const finalAmount = totalGrossAmount - discount
+    // ✅ FIX C4: Verificação de estoque + inserção DENTRO da mesma transação (evita race condition)
+    await prisma.$transaction(async (tx) => {
+      // Verificar estoque de CADA item dentro da transação
+      for (const snap of snapshotItemsData) {
+        const currentStock = await tx.finishedProductStock.findUnique({
+          where: { flavorId: snap.flavorId }
+        })
+        const available = currentStock?.quantity || 0
+        if (snap.quantity > available) {
+          throw new Error(
+            `Estoque insuficiente de "${snap.flavorName}": disponível ${available} un, pedido ${snap.quantity} un`
+          )
+        }
+      }
 
-    // 2. Transação Inserção e Baixas
-    await prisma.$transaction(async (tx: any) => {
-      // Criar O Recibo de Venda Header
+      // Criar o recibo de venda
       const sale = await tx.sale.create({
         data: {
           totalAmount: finalAmount,
@@ -87,12 +105,18 @@ export async function processSaleCheckout(cart: SaleCartItem[], paymentMethod: s
           paymentMethod,
           notes,
           items: {
-            create: snapshotItemsData
+            create: snapshotItemsData.map(snap => ({
+              flavorId: snap.flavorId,
+              quantity: snap.quantity,
+              unitSellPrice: snap.unitSellPrice,
+              unitCostAtSaleTime: snap.unitCostAtSaleTime,
+              totalMarginLiquid: snap.totalMarginLiquid
+            }))
           }
         }
       })
 
-      // Abater de maneira individual o estoque acabado (Geladeira)
+      // Abater o estoque acabado para cada item
       for (const snap of snapshotItemsData) {
         await tx.finishedProductStock.update({
           where: { flavorId: snap.flavorId },
@@ -112,9 +136,12 @@ export async function processSaleCheckout(cart: SaleCartItem[], paymentMethod: s
 
     revalidatePath("/vendas")
     revalidatePath("/sabores")
-
+    revalidatePath("/")
     return { success: true }
-  } catch(error: any) {
-    return { success: false, error: "Erro crítico ao faturar venda: " + error.message }
+
+  } catch (error: any) {
+    console.error("[Sales] Erro na venda:", error)
+    // Retornar mensagem do throw (são mensagens de negócio, não de banco)
+    return { success: false, error: error.message || "Erro ao faturar venda." }
   }
 }

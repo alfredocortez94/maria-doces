@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
+import { requireAuth } from "@/lib/session"
 
 // -------------------------------------------------------------
 // GET
@@ -23,6 +24,7 @@ export async function getIngredients() {
 
 export async function createIngredient(formData: FormData) {
   try {
+    await requireAuth()
     const name = formData.get("name") as string
     const category = formData.get("category") as string
     const unitMeasure = formData.get("unitMeasure") as string
@@ -71,6 +73,7 @@ export async function createIngredient(formData: FormData) {
 
 export async function deleteIngredient(id: string) {
   try {
+    await requireAuth()
     // Validar se está contido em alguma receita trancaria aqui via restrict key, o Prisma vai lançar erro.
     await prisma.ingredient.delete({
       where: { id }

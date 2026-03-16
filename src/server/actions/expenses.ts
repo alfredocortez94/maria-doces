@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
+import { requireAuth } from "@/lib/session"
 
 // -------------------------------------------------------------
 // GET EXPENSES
@@ -27,6 +28,7 @@ export async function getExpenses() {
 // -------------------------------------------------------------
 export async function createExpense(formData: FormData) {
   try {
+    await requireAuth()
     const description = formData.get("description") as string
     const amount = parseFloat(formData.get("amount") as string)
     let categoryId = formData.get("categoryId") as string
@@ -74,6 +76,7 @@ export async function createExpense(formData: FormData) {
 
 export async function deleteExpense(id: string) {
   try {
+    await requireAuth()
     await prisma.expense.delete({ where: { id } })
     revalidatePath("/despesas")
     return { success: true }

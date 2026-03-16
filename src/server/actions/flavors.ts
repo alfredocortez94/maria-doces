@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
+import { requireAuth } from "@/lib/session"
 
 // -------------------------------------------------------------
 // FLAVORS LIST & GET OVERVIEW
@@ -29,24 +30,22 @@ export async function getFlavorsOverview() {
 // -------------------------------------------------------------
 export async function createFlavor(formData: FormData) {
   try {
+    await requireAuth()
     const name = formData.get("name") as string
     const description = formData.get("description") as string
     const suggestedSellPrice = parseFloat(formData.get("suggestedSellPrice") as string) || 0
 
     if (!name) return { success: false, error: "O nome do sabor é obrigatório." }
 
-    const flavor = await prisma.flavor.create({
-      data: {
-        name,
-        description,
-        suggestedSellPrice,
-        active: true
-      }
-    })
-    
-    // Cria um registro de estoque vazio para ele
-    await prisma.finishedProductStock.create({
-       data: { flavorId: flavor.id, quantity: 0 }
+    // ✅ FIX N5: Criar sabor e estoque em transação atômica
+    const flavor = await prisma.$transaction(async (tx) => {
+      const created = await tx.flavor.create({
+        data: { name, description, suggestedSellPrice, active: true }
+      })
+      await tx.finishedProductStock.create({
+        data: { flavorId: created.id, quantity: 0 }
+      })
+      return created
     })
 
     revalidatePath("/sabores")
@@ -75,57 +74,61 @@ export async function toggleFlavorActive(id: string, currentStatus: boolean) {
 type RecipeItemInput = { ingredientId: string; quantity: number }
 
 export async function saveActiveRecipeSnapshot(
-  flavorId: string, 
-  yieldUnits: number, 
+  flavorId: string,
+  yieldUnits: number,
   items: RecipeItemInput[]
 ) {
   try {
-    if(yieldUnits <= 0) return { success: false, error: "O rendimento deve ser maior que zero." }
-    if(items.length === 0) return { success: false, error: "Adicione ao menos 1 ingrediente." }
+    await requireAuth()
 
-    // Vamos desativar as receitas antigas para manter histórico imutável
-    await prisma.recipe.updateMany({
-      where: { flavorId, active: true },
-      data: { active: false }
+    const parsedYield = Number(yieldUnits)
+    if (!parsedYield || parsedYield <= 0 || isNaN(parsedYield)) return { success: false, error: "O rendimento deve ser um número maior que zero." }
+    if (items.length === 0) return { success: false, error: "Adicione ao menos 1 ingrediente." }
+
+    // ✅ FIX B2: Buscar todos os ingredientes de uma vez (anti N+1)
+    const ingredientIds = items.map(i => i.ingredientId)
+    const ingredients = await prisma.ingredient.findMany({
+      where: { id: { in: ingredientIds } }
+    })
+    if (ingredients.length !== ingredientIds.length) {
+      throw new Error("Um ou mais ingredientes da receita não foram encontrados.")
+    }
+    const ingMap = new Map(ingredients.map(i => [i.id, i]))
+
+    // Calcular custo estimado total
+    let totalCostEst = 0
+    const resolvedItems = items.map(item => {
+      const ing = ingMap.get(item.ingredientId)!
+      totalCostEst += ing.unitCost * item.quantity
+      return { ingredientId: item.ingredientId, quantity: item.quantity }
     })
 
-    // Calcular o Estimated Cost (Preço Foto de Hoje)
-    let totalCostEst = 0
-    const resolvedItems = []
-    
-    for (const item of items) {
-      const ingredient = await prisma.ingredient.findUnique({ where: { id: item.ingredientId } })
-      if (!ingredient) throw new Error("Ingrediente inválido no lote.")
-      
-      const lineCost = ingredient.unitCost * item.quantity
-      totalCostEst += lineCost
-      
-      resolvedItems.push({
-         ingredientId: item.ingredientId,
-         quantity: item.quantity
+    const unitCostEst = totalCostEst / parsedYield
+
+    // Desativar receitas antigas e criar nova em transação
+    await prisma.$transaction(async (tx) => {
+      await tx.recipe.updateMany({
+        where: { flavorId, active: true },
+        data: { active: false }
       })
-    }
 
-    const unitCostEst = totalCostEst / yieldUnits
-
-    // Cravar a Nova Receita
-    await prisma.recipe.create({
-      data: {
-        flavorId,
-        active: true,
-        yieldUnits,
-        estimatedTotalCost: totalCostEst,
-        estimatedUnitCost: unitCostEst,
-        items: {
-          create: resolvedItems
+      await tx.recipe.create({
+        data: {
+          flavorId,
+          active: true,
+          yieldUnits: parsedYield,
+          estimatedTotalCost: totalCostEst,
+          estimatedUnitCost: unitCostEst,
+          items: { create: resolvedItems }
         }
-      }
+      })
     })
 
     revalidatePath("/sabores")
     return { success: true }
 
   } catch (error: any) {
+    console.error("[Flavors] Erro ao salvar receita:", error)
     return { success: false, error: "Erro ao salvar receita: " + error.message }
   }
 }
