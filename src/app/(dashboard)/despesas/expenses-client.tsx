@@ -59,50 +59,75 @@ export function ExpensesClient({ initialExpenses, categories }: { initialExpense
               <Plus size={16} /> Nova Despesa
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-lg">
             <DialogHeader>
               <DialogTitle>Registrar Nova Conta/Despesa</DialogTitle>
               <DialogDescription>Custos isolados pra deduzir do Lucro Líquido final (ex: Energia, Água).</DialogDescription>
             </DialogHeader>
-            <form action={handleCreate} className="space-y-4 py-4">
+            <form action={handleCreate} className="space-y-4 py-2">
               <div className="space-y-2">
-                <Label htmlFor="description">Descrição</Label>
+                <Label htmlFor="description">Descrição <span className="text-rose-500">*</span></Label>
                 <Input id="description" name="description" placeholder="Ex: Conta de Luz (Maio)" required />
               </div>
 
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <Label>Categoria</Label>
-                  <button type="button" onClick={() => setIsNewCat(!isNewCat)} className="text-xs text-blue-600 hover:underline">
-                    {isNewCat ? "Selecionar Existente" : "Criar Nova Categoria"}
-                  </button>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <Label>Categoria <span className="text-rose-500">*</span></Label>
+                    <button type="button" onClick={() => setIsNewCat(!isNewCat)} className="text-xs text-blue-600 hover:underline">
+                      {isNewCat ? "Selecionar Existente" : "Criar Nova Categoria"}
+                    </button>
+                  </div>
+                  {isNewCat ? (
+                    <Input name="newCategory" placeholder="Nome da nova categoria..." required />
+                  ) : (
+                    <Select value={selectedCat} onValueChange={(val) => { if (val) setSelectedCat(val) }}>
+                      <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                      <SelectContent>
+                        {categories.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                        {categories.length === 0 && <SelectItem value="none" disabled>Nenhuma listada</SelectItem>}
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
-                {isNewCat ? (
-                  <Input name="newCategory" placeholder="Nome da nova categoria..." required />
-                ) : (
-                  <Select value={selectedCat} onValueChange={(val) => { if (val) setSelectedCat(val) }}>
-                    <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-                    <SelectContent>
-                      {categories.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                      {categories.length === 0 && <SelectItem value="none" disabled>Nenhuma listada</SelectItem>}
-                    </SelectContent>
-                  </Select>
-                )}
+
+                <div className="space-y-2">
+                  <Label htmlFor="amount">Valor Total (R$) <span className="text-rose-500">*</span></Label>
+                  <Input id="amount" name="amount" type="number" step="0.01" required placeholder="Ex: 154.30" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="expenseDate">Data do Pagamento</Label>
+                  <Input 
+                    id="expenseDate" 
+                    name="expenseDate" 
+                    type="date" 
+                    defaultValue={new Date().toISOString().split('T')[0]}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="invoiceRef">Nº Nota / Referência</Label>
+                  <Input id="invoiceRef" name="invoiceRef" placeholder="Ex: NF-00123" />
+                </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="amount">Valor Total (R$)</Label>
-                <Input id="amount" name="amount" type="number" step="0.01" required placeholder="Ex: 154.30" />
+                <Label htmlFor="notes">Observações</Label>
+                <Input id="notes" name="notes" placeholder="Ex: Pago no cartão corporativo, vence dia 10..." />
               </div>
 
-              <div className="flex items-center gap-2 pt-2">
-                <input type="checkbox" id="isRecurring" name="isRecurring" className="rounded text-rose-600 focus:ring-rose-500 w-4 h-4" />
-                <Label htmlFor="isRecurring" className="font-normal text-slate-600">Considerar Despesa Recorrente Fixa (Aviso/Filtro)</Label>
+              <div className="flex items-center gap-2 pt-1 bg-rose-50/50 border border-rose-100 rounded-lg p-3">
+                <input type="checkbox" id="isRecurring" name="isRecurring" className="rounded text-rose-600 focus:ring-rose-500 w-4 h-4 shrink-0" />
+                <Label htmlFor="isRecurring" className="font-normal text-slate-600 cursor-pointer">
+                  Despesa Recorrente Fixa <span className="text-xs text-slate-400">(Marcará como conta mensal fixa)</span>
+                </Label>
               </div>
 
-              <DialogFooter className="pt-4">
+              <DialogFooter className="pt-2">
                 <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>Cancelar</Button>
-                <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Registrando..." : "Registrar Saída"}</Button>
+                <Button type="submit" className="bg-rose-600 hover:bg-rose-700" disabled={isSubmitting}>{isSubmitting ? "Registrando..." : "Registrar Saída"}</Button>
               </DialogFooter>
             </form>
           </DialogContent>

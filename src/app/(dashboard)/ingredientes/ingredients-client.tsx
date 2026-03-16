@@ -72,38 +72,65 @@ export function IngredientsClient({ initialData }: { initialData: any[] }) {
               <Plus size={16} /> Novo Ingrediente
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-lg">
             <DialogHeader>
               <DialogTitle>Cadastrar Insumo</DialogTitle>
               <DialogDescription>Adicione um novo ingrediente para usar nas fichas técnicas.</DialogDescription>
             </DialogHeader>
-            <form action={handleCreate} className="space-y-4 py-4">
+            <form action={handleCreate} className="space-y-4 py-2">
+              <div className="space-y-2">
+                <Label htmlFor="name">Nome do Produto <span className="text-rose-500">*</span></Label>
+                <Input id="name" name="name" placeholder="Ex: Leite Condensado Moça" required />
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2 col-span-2">
-                  <Label htmlFor="name">Nome do Produto</Label>
-                  <Input id="name" name="name" placeholder="Ex: Leite Condensado Moça" required />
-                </div>
                 <div className="space-y-2">
                   <Label htmlFor="category">Categoria</Label>
-                  <Input id="category" name="category" placeholder="Laticínios, Secos..." />
+                  <Input id="category" name="category" placeholder="Ex: Laticínios, Secos..." />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="unitMeasure">Und. de Medida base</Label>
+                  <Label htmlFor="unitMeasure">Und. de Medida <span className="text-rose-500">*</span></Label>
                   <Select name="unitMeasure" defaultValue="g">
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="g">Gramas (g)</SelectItem>
+                      <SelectItem value="kg">Quilos (kg)</SelectItem>
                       <SelectItem value="ml">Mililitros (ml)</SelectItem>
+                      <SelectItem value="l">Litros (l)</SelectItem>
                       <SelectItem value="un">Unidade (un)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
-              <DialogFooter>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="unitCost">Custo Unitário Inicial (R$)</Label>
+                  <Input id="unitCost" name="unitCost" type="number" step="0.0001" placeholder="Ex: 0.0150" />
+                  <p className="text-[10px] text-slate-400">Custo por 1 unidade da medida acima</p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="minStock">Estoque Mínimo (Alerta)</Label>
+                  <Input id="minStock" name="minStock" type="number" step="0.01" placeholder="Ex: 500" />
+                  <p className="text-[10px] text-slate-400">Alerta visual quando o estoque cair abaixo</p>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="supplier">Fornecedor / Onde Compra</Label>
+                <Input id="supplier" name="supplier" placeholder="Ex: Laticínios São João, Atacadão..." />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="notes">Observações</Label>
+                <Input id="notes" name="notes" placeholder="Ex: Prefira lata 395g, usar dentro de 3 dias após aberto..." />
+              </div>
+
+              <DialogFooter className="pt-2">
                 <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>Cancelar</Button>
-                <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Salvando..." : "Salvar"}</Button>
+                <Button type="submit" className="bg-rose-500 hover:bg-rose-600" disabled={isSubmitting}>{isSubmitting ? "Salvando..." : "Salvar Ingrediente"}</Button>
               </DialogFooter>
             </form>
           </DialogContent>
