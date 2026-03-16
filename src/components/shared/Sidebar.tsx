@@ -39,7 +39,7 @@ export function Sidebar() {
       {/* Logo */}
       <div className="px-4 py-5 flex flex-col items-center border-b" style={{ borderColor: "oklch(1 0 0 / 10%)" }}>
         <Image
-          src="/logo.jpg"
+          src="/logo.png"
           alt="Maria Doce Gelado"
           width={140}
           height={80}

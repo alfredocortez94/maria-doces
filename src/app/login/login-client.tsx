@@ -51,7 +51,7 @@ export function LoginClient() {
         <div className="relative z-10 text-center">
           <div className="w-48 mx-auto mb-8">
             <Image
-              src="/logo.jpg"
+              src="/logo.png"
               alt="Maria Doce Gelado"
               width={240}
               height={180}
@@ -83,7 +83,7 @@ export function LoginClient() {
           {/* Logo mobile */}
           <div className="lg:hidden flex justify-center mb-8">
             <Image
-              src="/logo.jpg"
+              src="/logo.png"
               alt="Maria Doce Gelado"
               width={180}
               height={100}
