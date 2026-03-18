@@ -13,7 +13,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { createFlavor, toggleFlavorActive, saveActiveRecipeSnapshot } from "@/server/actions/flavors"
+import { createFlavor, toggleFlavorActive, saveActiveRecipeSnapshot, editFlavor } from "@/server/actions/flavors"
 
 // Helper money formatter
 const money = (val: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 2 }).format(val)
@@ -26,6 +26,8 @@ export function FlavorsClient({
   ingredientsList: any[] 
 }) {
   const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const [isEditOpen, setIsEditOpen] = useState(false)
+  const [editingFlavor, setEditingFlavor] = useState<any>(null)
   const [isRecipeOpen, setIsRecipeOpen] = useState(false)
   const [selectedFlavor, setSelectedFlavor] = useState<any>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -35,7 +37,7 @@ export function FlavorsClient({
   const [yieldUnits, setYieldUnits] = useState<number>(1)
 
   // --------------------------------------------------------
-  // Ações Sabor Novo
+  // Ações Sabor Novo / Editar
   // --------------------------------------------------------
   async function handleCreate(formData: FormData) {
     setIsSubmitting(true)
@@ -47,6 +49,25 @@ export function FlavorsClient({
     } else {
       toast.error(res.error)
     }
+  }
+
+  async function handleEdit(formData: FormData) {
+    if (!editingFlavor) return
+    setIsSubmitting(true)
+    const res = await editFlavor(editingFlavor.id, formData)
+    setIsSubmitting(false)
+    if (res.success) {
+      toast.success("Sabor atualizado com sucesso!")
+      setIsEditOpen(false)
+      setEditingFlavor(null)
+    } else {
+      toast.error(res.error)
+    }
+  }
+
+  function openEditDialog(flavor: any) {
+    setEditingFlavor(flavor)
+    setIsEditOpen(true)
   }
 
   // --------------------------------------------------------
@@ -162,6 +183,38 @@ export function FlavorsClient({
             </form>
           </DialogContent>
         </Dialog>
+
+        {/* MODAL EDITAR SABOR */}
+        <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Editar Sabor</DialogTitle>
+              <DialogDescription>Atualize o nome e o preço praticado deste sabor.</DialogDescription>
+            </DialogHeader>
+            {editingFlavor && (
+              <form action={handleEdit} className="space-y-4 py-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2 col-span-2">
+                    <Label htmlFor="edit-name">Nome / Título Comercial</Label>
+                    <Input id="edit-name" name="name" defaultValue={editingFlavor.name} required />
+                  </div>
+                  <div className="space-y-2 col-span-2">
+                    <Label htmlFor="edit-description">Descrição Menu (Opcional)</Label>
+                    <Input id="edit-description" name="description" defaultValue={editingFlavor.description || ""} />
+                  </div>
+                  <div className="space-y-2 col-span-2 md:col-span-1">
+                    <Label htmlFor="edit-suggestedSellPrice">Preço de Venda Praticado (R$)</Label>
+                    <Input id="edit-suggestedSellPrice" name="suggestedSellPrice" type="number" step="0.01" required defaultValue={editingFlavor.suggestedSellPrice} />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>Cancelar</Button>
+                  <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Salvando..." : "Salvar Alterações"}</Button>
+                </DialogFooter>
+              </form>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
 
       <Table>
@@ -222,7 +275,16 @@ export function FlavorsClient({
                       </div>
                     ) : "-"}
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right flex items-center justify-end gap-2">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      title="Editar Info"
+                      className="text-slate-500 hover:text-slate-800 h-8 w-8 p-0"
+                      onClick={() => openEditDialog(flavor)}
+                    >
+                      <Edit size={14} /> 
+                    </Button>
                     <Button 
                       variant="outline" 
                       size="sm" 

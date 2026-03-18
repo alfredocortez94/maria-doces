@@ -55,6 +55,27 @@ export async function createFlavor(formData: FormData) {
   }
 }
 
+export async function editFlavor(id: string, formData: FormData) {
+  try {
+    await requireAuth()
+    const name = formData.get("name") as string
+    const description = formData.get("description") as string
+    const suggestedSellPrice = parseFloat(formData.get("suggestedSellPrice") as string) || 0
+
+    if (!name) return { success: false, error: "O nome do sabor é obrigatório." }
+
+    await prisma.flavor.update({
+      where: { id },
+      data: { name, description, suggestedSellPrice }
+    })
+
+    revalidatePath("/sabores")
+    return { success: true }
+  } catch (error: any) {
+    return { success: false, error: "Falha ao editar sabor: " + error.message }
+  }
+}
+
 export async function toggleFlavorActive(id: string, currentStatus: boolean) {
   try {
     await prisma.flavor.update({
