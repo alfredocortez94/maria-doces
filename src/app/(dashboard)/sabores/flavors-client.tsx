@@ -241,7 +241,7 @@ export function FlavorsClient({
 
       {/* SUPER MODAL RECEITA (O MOTOR DE PRECIFICAÇÃO) */}
       <Dialog open={isRecipeOpen} onOpenChange={setIsRecipeOpen}>
-        <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col p-0">
+        <DialogContent className="sm:max-w-4xl max-w-[95vw] max-h-[85vh] flex flex-col p-0 overflow-hidden">
           <DialogHeader className="p-6 border-b shrink-0 bg-slate-50">
             <DialogTitle className="flex items-center gap-2 text-xl">
               <Calculator className="text-blue-500"/> Ficha Técnica: {selectedFlavor?.name}

@@ -57,6 +57,7 @@ export function LoginClient() {
               height={180}
               className="object-contain drop-shadow-2xl"
               priority
+              unoptimized
             />
           </div>
 
@@ -89,6 +90,7 @@ export function LoginClient() {
               height={100}
               className="object-contain"
               priority
+              unoptimized
             />
           </div>
 
