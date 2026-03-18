@@ -114,20 +114,22 @@ export function ProductionClient({
             
             <div className="space-y-4 mb-6 relative z-10">
                <div className="space-y-2">
-                 <Label className="text-slate-600 font-semibold">Sabor (Requer Ficha Técnica ativa) </Label>
-                 <Select value={selectedFlavorId} onValueChange={(val) => { if(val) setSelectedFlavorId(val) }}>
-                    <SelectTrigger className="w-full bg-slate-50 border-slate-200 h-12 relative text-left p-3 hover:border-rose-300 transition-colors rounded-lg">
-                      <SelectValue placeholder="Selecione um sabor pendente..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {flavorsReadyToProduce.map(f => (
-                        <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
-                      ))}
-                      {flavorsReadyToProduce.length === 0 && (
-                        <SelectItem value="none" disabled>Cadastre uma Ficha Técnica no menu Sabores</SelectItem>
-                      )}
-                    </SelectContent>
-                 </Select>
+                 <Label className="text-slate-600 font-semibold">🍬 Qual sabor foi feito hoje?</Label>
+                 <select
+                   value={selectedFlavorId}
+                   onChange={(e) => setSelectedFlavorId(e.target.value)}
+                   className="w-full h-12 px-3 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 text-sm font-medium hover:border-rose-300 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100 transition-colors cursor-pointer"
+                 >
+                   <option value="">-- Selecione o sabor --</option>
+                   {flavorsReadyToProduce.map(f => (
+                     <option key={f.id} value={f.id}>{f.name}</option>
+                   ))}
+                 </select>
+                 {flavorsReadyToProduce.length === 0 && (
+                   <p className="text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200">
+                     ⚠️ Cadastre uma Ficha Técnica no menu "Sabores & Receitas"
+                   </p>
+                 )}
                </div>
 
                {renderPreview && (

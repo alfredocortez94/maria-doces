@@ -255,17 +255,20 @@ export function FlavorsClient({
         <TableHeader>
           <TableRow className="bg-slate-50 hover:bg-slate-50">
             <TableHead>Sabor</TableHead>
+            <TableHead className="text-center">Status</TableHead>
             <TableHead className="text-right">Preço de Venda</TableHead>
-            <TableHead className="text-center">Ficha Técnica Info</TableHead>
-            <TableHead className="text-right">Custo Proj. (MVP)</TableHead>
-            <TableHead className="text-right">Margem Líq. Un.</TableHead>
-            <TableHead className="text-right w-[150px]">Ações</TableHead>
+            <TableHead className="text-right hidden md:table-cell">Custo Unitário</TableHead>
+            <TableHead className="text-right hidden md:table-cell">Lucro por Unidade</TableHead>
+            <TableHead className="text-right w-[160px]">Ações</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {initialFlavors.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="text-center py-8 text-slate-500">Nenhum sabor cadastrado. Crie um e construa a ficha técnica dele.</TableCell>
+              <TableCell colSpan={6} className="text-center py-12 text-slate-400">
+                <IceCream2 className="mx-auto mb-3 opacity-30" size={32} />
+                Nenhum sabor cadastrado. Clique em "Novo Sabor" para começar!
+              </TableCell>
             </TableRow>
           ) : (
             initialFlavors.map((flavor) => {
@@ -274,59 +277,79 @@ export function FlavorsClient({
               const cost = activeRecipe?.estimatedUnitCost || 0
               const profit = flavor.suggestedSellPrice - cost
               const margin = flavor.suggestedSellPrice > 0 ? (profit / flavor.suggestedSellPrice) * 100 : 0
-              const isDanger = margin > 0 && margin < 30
+              const isLowMargin = hasRecipe && margin < 30
 
               return (
-                <TableRow key={flavor.id}>
+                <TableRow key={flavor.id} className={!flavor.active ? "opacity-50 bg-slate-50" : ""}>
                   <TableCell>
-                    <div className="font-medium text-slate-800">{flavor.name}</div>
-                    <div className="text-xs text-slate-400">Estoque fisíco Base: {flavor.stock?.quantity || 0} un</div>
-                  </TableCell>
-                  <TableCell className="text-right font-medium text-pink-700">
-                    {money(flavor.suggestedSellPrice)}
+                    <div className="flex items-center gap-2">
+                      <div>
+                        <div className="font-semibold text-slate-800">{flavor.name}</div>
+                        <div className="text-xs text-slate-400 mt-0.5">
+                          {flavor.stock?.quantity || 0} un. em estoque
+                        </div>
+                      </div>
+                    </div>
                   </TableCell>
                   <TableCell className="text-center">
-                    {hasRecipe ? (
-                       <span className="text-xs bg-blue-100 text-blue-700 font-medium px-2 py-1 rounded-full border border-blue-200">
-                         {activeRecipe.items.length} Ingredientes
-                       </span>
+                    {!flavor.active ? (
+                      <span className="text-xs bg-slate-100 text-slate-500 font-medium px-2 py-1 rounded-full">
+                        Inativo
+                      </span>
+                    ) : hasRecipe ? (
+                      <span className="text-xs bg-green-100 text-green-700 font-medium px-2 py-1 rounded-full border border-green-200">
+                        ✓ Pronto para produção
+                      </span>
                     ) : (
-                       <span className="text-xs bg-slate-100 text-slate-500 font-medium px-2 py-1 rounded-full border border-slate-200 flex items-center justify-center gap-1 w-max mx-auto">
-                         <AlertCircle size={12}/> Pendente
-                       </span>
+                      <span className="text-xs bg-amber-100 text-amber-700 font-medium px-2 py-1 rounded-full border border-amber-200">
+                        ⚠ Sem receita
+                      </span>
                     )}
                   </TableCell>
-                  <TableCell className="text-right text-rose-600 font-medium tracking-tight">
-                    {hasRecipe ? money(cost) : "-"}
+                  <TableCell className="text-right font-semibold text-pink-700">
+                    {money(flavor.suggestedSellPrice)}
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right hidden md:table-cell">
+                    {hasRecipe ? (
+                      <span className="text-rose-600 font-medium">{money(cost)}</span>
+                    ) : (
+                      <span className="text-slate-300">—</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right hidden md:table-cell">
                     {hasRecipe ? (
                       <div className="flex flex-col items-end">
-                        <span className="text-sm font-semibold">{profit > 0 ? "+" : ""}{money(profit)}</span>
-                        <span className={`text-[10px] font-bold ${isDanger ? 'text-red-500' : 'text-slate-500'}`}>
-                          {margin.toFixed(1)}% ML
+                        <span className={`font-semibold ${profit > 0 ? 'text-green-600' : 'text-red-500'}`}>
+                          {profit > 0 ? "+" : ""}{money(profit)}
+                        </span>
+                        <span className={`text-[10px] font-bold ${isLowMargin ? 'text-red-500' : 'text-slate-400'}`}>
+                          {margin.toFixed(0)}% de margem
                         </span>
                       </div>
-                    ) : "-"}
+                    ) : (
+                      <span className="text-slate-300">—</span>
+                    )}
                   </TableCell>
-                  <TableCell className="text-right flex items-center justify-end gap-2">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      title="Editar Info"
-                      className="text-slate-500 hover:text-slate-800 h-8 w-8 p-0"
-                      onClick={() => openEditDialog(flavor)}
-                    >
-                      <Edit size={14} /> 
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="text-blue-600 border-blue-200 hover:bg-blue-50 h-8 gap-1"
-                      onClick={() => openRecipeBuilder(flavor)}
-                    >
-                      <Settings2 size={13} /> Ficha Técnica
-                    </Button>
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-1">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        title="Editar Sabor"
+                        className="text-slate-400 hover:text-slate-800 h-8 w-8 p-0"
+                        onClick={() => openEditDialog(flavor)}
+                      >
+                        <Edit size={14} /> 
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="text-rose-600 border-rose-200 hover:bg-rose-50 h-8 gap-1 text-xs font-medium"
+                        onClick={() => openRecipeBuilder(flavor)}
+                      >
+                        <Settings2 size={13} /> Receita
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               )
