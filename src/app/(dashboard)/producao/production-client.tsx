@@ -78,7 +78,7 @@ export function ProductionClient({
                         <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
                       ))}
                       {flavorsReadyToProduce.length === 0 && (
-                        <SelectItem value="none" disabled>Nenhum sabor com ficha ativa</SelectItem>
+                        <SelectItem value="none" disabled>Cadastre uma Ficha Técnica no menu Sabores</SelectItem>
                       )}
                     </SelectContent>
                  </Select>

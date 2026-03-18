@@ -255,6 +255,12 @@ export function FlavorsClient({
             
             {/* Esquerda: Construtor */}
             <div className="md:col-span-3 space-y-4">
+               {ingredientsList.length === 0 && (
+                 <div className="bg-orange-50 text-orange-800 p-3 rounded-md text-sm border border-orange-200 mb-4 flex items-center">
+                   <AlertCircle className="shrink-0 mr-2" size={16} /> 
+                   <span>Você ainda não tem ingredientes cadastrados. Vá em <b>Ingredientes & Estoque</b> para adicionar.</span>
+                 </div>
+               )}
                <div>
                   <h4 className="text-sm font-medium text-slate-800 mb-2">Adicionar Ingrediente da Despensa</h4>
                   <div className="flex gap-2">
@@ -268,6 +274,9 @@ export function FlavorsClient({
                               {ing.name} ({money(ing.unitCost)} / {ing.unitMeasure})
                             </SelectItem>
                           ))}
+                          {ingredientsList.length === 0 && (
+                            <SelectItem value="none" disabled>Nenhum ingrediente base disponível</SelectItem>
+                          )}
                         </SelectContent>
                      </Select>
                   </div>
