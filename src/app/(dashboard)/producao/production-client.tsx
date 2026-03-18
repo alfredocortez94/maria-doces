@@ -116,8 +116,8 @@ export function ProductionClient({
                <div className="space-y-2">
                  <Label className="text-slate-600 font-semibold">Sabor (Requer Ficha Técnica ativa) </Label>
                  <Select value={selectedFlavorId} onValueChange={(val) => { if(val) setSelectedFlavorId(val) }}>
-                    <SelectTrigger className="bg-slate-50 border-slate-200 h-12 relative text-left p-3 hover:border-rose-300 transition-colors">
-                      <SelectValue placeholder="Selecione..." />
+                    <SelectTrigger className="w-full bg-slate-50 border-slate-200 h-12 relative text-left p-3 hover:border-rose-300 transition-colors rounded-lg">
+                      <SelectValue placeholder="Selecione um sabor pendente..." />
                     </SelectTrigger>
                     <SelectContent>
                       {flavorsReadyToProduce.map(f => (

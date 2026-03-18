@@ -89,6 +89,27 @@ export async function toggleFlavorActive(id: string, currentStatus: boolean) {
   }
 }
 
+export async function deleteFlavor(id: string) {
+  try {
+    await requireAuth()
+    
+    // Deleta o estoque de produto final primeiro
+    await prisma.finishedProductStock.deleteMany({
+      where: { flavorId: id }
+    })
+    
+    // Deleta o sabor propriamente dito cascateando
+    await prisma.flavor.delete({
+      where: { id }
+    })
+    
+    revalidatePath("/sabores")
+    return { success: true }
+  } catch (error: any) {
+    return { success: false, error: "Não foi possível apagar. O Sabor possui histórico de produção vinculado." }
+  }
+}
+
 // -------------------------------------------------------------
 // BILL OF MATERIALS (RECIPE) ENGINE
 // -------------------------------------------------------------

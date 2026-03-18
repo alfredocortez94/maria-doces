@@ -13,7 +13,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { createFlavor, toggleFlavorActive, saveActiveRecipeSnapshot, editFlavor } from "@/server/actions/flavors"
+import { createFlavor, toggleFlavorActive, saveActiveRecipeSnapshot, editFlavor, deleteFlavor } from "@/server/actions/flavors"
 
 // Helper money formatter
 const money = (val: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 2 }).format(val)
@@ -58,6 +58,23 @@ export function FlavorsClient({
     setIsSubmitting(false)
     if (res.success) {
       toast.success("Sabor atualizado com sucesso!")
+      setIsEditOpen(false)
+      setEditingFlavor(null)
+    } else {
+      toast.error(res.error)
+    }
+  }
+
+  async function handleDeleteFlavor() {
+    if (!editingFlavor) return
+    const confirmed = confirm("Tem certeza que deseja apagar este sabor? Históricos relacionados podem impedir se já for produzido.")
+    if (!confirmed) return
+
+    setIsSubmitting(true)
+    const res = await deleteFlavor(editingFlavor.id)
+    setIsSubmitting(false)
+    if (res.success) {
+      toast.success("Sabor apagado com sucesso!")
       setIsEditOpen(false)
       setEditingFlavor(null)
     } else {
@@ -207,9 +224,14 @@ export function FlavorsClient({
                     <Input id="edit-suggestedSellPrice" name="suggestedSellPrice" type="number" step="0.01" required defaultValue={editingFlavor.suggestedSellPrice} />
                   </div>
                 </div>
-                <DialogFooter>
-                  <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>Cancelar</Button>
-                  <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Salvando..." : "Salvar Alterações"}</Button>
+                <DialogFooter className="flex justify-between items-center w-full">
+                  <Button type="button" variant="destructive" onClick={handleDeleteFlavor} disabled={isSubmitting} className="mr-auto">
+                    Excluir
+                  </Button>
+                  <div className="flex gap-2">
+                    <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>Cancelar</Button>
+                    <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Salvando..." : "Salvar Alterações"}</Button>
+                  </div>
                 </DialogFooter>
               </form>
             )}
