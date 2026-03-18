@@ -223,6 +223,18 @@ export function FlavorsClient({
                     <Label htmlFor="edit-suggestedSellPrice">Preço de Venda Praticado (R$)</Label>
                     <Input id="edit-suggestedSellPrice" name="suggestedSellPrice" type="number" step="0.01" required defaultValue={editingFlavor.suggestedSellPrice} />
                   </div>
+                  <div className="space-y-2 col-span-2 md:col-span-1 flex flex-col justify-end pb-2">
+                    <div className="flex items-center space-x-2">
+                      <input 
+                        type="checkbox" 
+                        id="edit-active" 
+                        name="active" 
+                        defaultChecked={editingFlavor.active} 
+                        className="w-5 h-5 rounded border-gray-300 text-rose-500 focus:ring-rose-500 cursor-pointer" 
+                      />
+                      <Label htmlFor="edit-active" className="cursor-pointer">Sabor Ativo (Aparece no App/PDV)</Label>
+                    </div>
+                  </div>
                 </div>
                 <DialogFooter className="flex justify-between items-center w-full">
                   <Button type="button" variant="destructive" onClick={handleDeleteFlavor} disabled={isSubmitting} className="mr-auto">

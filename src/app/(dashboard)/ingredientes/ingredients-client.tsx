@@ -13,12 +13,15 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { createIngredient, deleteIngredient, registerStockEntry } from "@/server/actions/ingredients"
+import { createIngredient, deleteIngredient, registerStockEntry, editIngredient } from "@/server/actions/ingredients"
+import { Edit } from "lucide-react"
 
 export function IngredientsClient({ initialData }: { initialData: any[] }) {
   const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const [isEditOpen, setIsEditOpen] = useState(false)
   const [isStockOpen, setIsStockOpen] = useState(false)
   const [selectedIngredient, setSelectedIngredient] = useState<any>(null)
+  const [editingIngredient, setEditingIngredient] = useState<any>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   async function handleCreate(formData: FormData) {
@@ -28,6 +31,20 @@ export function IngredientsClient({ initialData }: { initialData: any[] }) {
     if (res.success) {
       toast.success("Ingrediente cadastrado com sucesso!")
       setIsCreateOpen(false)
+    } else {
+      toast.error(res.error)
+    }
+  }
+
+  async function handleEdit(formData: FormData) {
+    if (!editingIngredient) return
+    setIsSubmitting(true)
+    const res = await editIngredient(editingIngredient.id, formData)
+    setIsSubmitting(false)
+    if (res.success) {
+      toast.success("Ingrediente alterado com sucesso!")
+      setIsEditOpen(false)
+      setEditingIngredient(null)
     } else {
       toast.error(res.error)
     }
@@ -170,6 +187,18 @@ export function IngredientsClient({ initialData }: { initialData: any[] }) {
                     <Button 
                       variant="outline" 
                       size="icon" 
+                      className="h-8 w-8 text-slate-500 border-slate-200 hover:bg-slate-100"
+                      onClick={() => {
+                        setEditingIngredient(item)
+                        setIsEditOpen(true)
+                      }}
+                      title="Editar Cadastro do Ingrediente"
+                    >
+                      <Edit size={14} />
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
                       className="h-8 w-8 text-blue-600 border-blue-200 hover:bg-blue-50"
                       onClick={() => {
                         setSelectedIngredient(item)
@@ -225,6 +254,67 @@ export function IngredientsClient({ initialData }: { initialData: any[] }) {
               <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Lançando..." : "Registrar Entrada"}</Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* MODAL EDITAR INGREDIENTE */}
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Editar Cadastro do Insumo</DialogTitle>
+            <DialogDescription>Edite as informações base do ingrediente.</DialogDescription>
+          </DialogHeader>
+          {editingIngredient && (
+            <form action={handleEdit} className="space-y-4 py-2">
+              <div className="space-y-2">
+                <Label htmlFor="edit-name">Nome do Produto <span className="text-rose-500">*</span></Label>
+                <Input id="edit-name" name="name" defaultValue={editingIngredient.name} required />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-category">Categoria</Label>
+                  <Input id="edit-category" name="category" defaultValue={editingIngredient.category || ""} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-unitMeasure">Und. de Medida <span className="text-rose-500">*</span></Label>
+                  <Select name="unitMeasure" defaultValue={editingIngredient.unitMeasure}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="g">Gramas (g)</SelectItem>
+                      <SelectItem value="kg">Quilos (kg)</SelectItem>
+                      <SelectItem value="ml">Mililitros (ml)</SelectItem>
+                      <SelectItem value="l">Litros (l)</SelectItem>
+                      <SelectItem value="un">Unidade (un)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-unitCost">Custo Unitário (R$)</Label>
+                  <Input id="edit-unitCost" name="unitCost" type="number" step="0.0001" defaultValue={editingIngredient.unitCost} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-minStock">Estoque Mínimo (Alerta)</Label>
+                  <Input id="edit-minStock" name="minStock" type="number" step="0.01" defaultValue={editingIngredient.minStock} />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-supplier">Fornecedor / Onde Compra</Label>
+                <Input id="edit-supplier" name="supplier" defaultValue={editingIngredient.supplier || ""} />
+              </div>
+
+              <DialogFooter className="pt-2">
+                <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>Cancelar</Button>
+                <Button type="submit" className="bg-rose-500 hover:bg-rose-600" disabled={isSubmitting}>{isSubmitting ? "Salvando..." : "Salvar Edição"}</Button>
+              </DialogFooter>
+            </form>
+          )}
         </DialogContent>
       </Dialog>
     </div>

@@ -71,6 +71,39 @@ export async function createIngredient(formData: FormData) {
   }
 }
 
+export async function editIngredient(id: string, formData: FormData) {
+  try {
+    await requireAuth()
+    const name = formData.get("name") as string
+    const category = formData.get("category") as string
+    const unitMeasure = formData.get("unitMeasure") as string
+    const minStock = parseFloat(formData.get("minStock") as string) || 0
+    const unitCost = parseFloat(formData.get("unitCost") as string) || 0
+    const supplier = formData.get("supplier") as string
+
+    if (!name || !unitMeasure) {
+      return { success: false, error: "Nome e Unidade de Medida são obrigatórios." }
+    }
+
+    const ingredient = await prisma.ingredient.update({
+      where: { id },
+      data: {
+        name,
+        category,
+        unitMeasure,
+        minStock,
+        unitCost,
+        supplier,
+      }
+    })
+
+    revalidatePath("/ingredientes")
+    return { success: true, data: ingredient }
+  } catch (error: any) {
+    return { success: false, error: "Falha ao editar ingrediente: " + error.message }
+  }
+}
+
 export async function deleteIngredient(id: string) {
   try {
     await requireAuth()

@@ -61,12 +61,14 @@ export async function editFlavor(id: string, formData: FormData) {
     const name = formData.get("name") as string
     const description = formData.get("description") as string
     const suggestedSellPrice = parseFloat(formData.get("suggestedSellPrice") as string) || 0
+    const activeRaw = formData.get("active")
+    const active = activeRaw === "on" || activeRaw === "true"
 
     if (!name) return { success: false, error: "O nome do sabor é obrigatório." }
 
     await prisma.flavor.update({
       where: { id },
-      data: { name, description, suggestedSellPrice }
+      data: { name, description, suggestedSellPrice, active }
     })
 
     revalidatePath("/sabores")
