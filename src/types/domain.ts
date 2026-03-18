@@ -11,7 +11,7 @@ export interface Ingredient {
   unitMeasure: string
   unitCost: number
   currentStock: number
-  minStock: number | null
+  minStock: number  // não nulo — Prisma define como Float @default(0)
   supplier: string | null
   notes: string | null
   createdAt: string | Date
@@ -23,6 +23,7 @@ export interface RecipeItem {
   id: string
   ingredientId: string
   quantity: number
+  unitCost: number
   ingredient: Ingredient
 }
 
@@ -64,6 +65,11 @@ export interface ProductionBatch {
   date: string | Date
   notes: string | null
   flavor: { id: string; name: string }
+  recipe: {
+    id: string
+    yieldUnits: number
+    items: { ingredientId: string; quantity: number; unitCost: number }[]
+  }
 }
 
 // --- Vendas ---

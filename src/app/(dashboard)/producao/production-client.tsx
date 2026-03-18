@@ -1,23 +1,21 @@
 "use client"
 
 import { useState } from "react"
-import { PackageCheck, Factory, Play, ArrowRight, ArrowDown } from "lucide-react"
+import { PackageCheck, Factory, ArrowRight, ArrowDown, Edit, Trash2, Play } from "lucide-react"
 import { toast } from "sonner"
 import { 
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { 
-  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger 
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle 
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { processProductionBatch, deleteProductionBatch, editProductionBatch } from "@/server/actions/production"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import type { Flavor, ProductionBatch } from "@/types/domain"
-import { Edit, Trash2 } from "lucide-react"
 
 const PAGE_SIZE = 15
 const money = (val: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 2 }).format(val)

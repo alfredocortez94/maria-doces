@@ -6,7 +6,6 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { processSaleCheckout, SaleCartItem } from "@/server/actions/sales"
@@ -207,15 +206,16 @@ export function SalesClient({
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <Label className="text-slate-400 text-xs mb-1 block">Pagamento</Label>
-                  <Select value={paymentMethod} onValueChange={val => { if (val) setPaymentMethod(val) }}>
-                    <SelectTrigger className="bg-slate-800 border-none text-white h-9 text-sm"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="PIX">PIX</SelectItem>
-                      <SelectItem value="CREDIT">Crédito</SelectItem>
-                      <SelectItem value="DEBIT">Débito</SelectItem>
-                      <SelectItem value="CASH">Dinheiro</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <select
+                    value={paymentMethod}
+                    onChange={e => setPaymentMethod(e.target.value)}
+                    className="w-full h-9 px-2 rounded-md bg-slate-800 border-none text-white text-sm cursor-pointer focus:outline-none focus:ring-1 focus:ring-pink-500"
+                  >
+                    <option value="PIX">PIX</option>
+                    <option value="CREDIT">Cartão de Crédito</option>
+                    <option value="DEBIT">Cartão de Débito</option>
+                    <option value="CASH">Dinheiro</option>
+                  </select>
                 </div>
                 <div>
                   <Label className="text-slate-400 text-xs mb-1 block">Desconto (R$)</Label>

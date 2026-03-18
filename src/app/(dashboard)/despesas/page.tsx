@@ -5,7 +5,8 @@ import { ExpensesClient } from "./expenses-client"
 
 export default async function ExpensesPage() {
   const res = await getExpenses()
-  const { expenses, categories } = res.success ? (res as any).data : { expenses: [], categories: [] }
+  const expenses = res.success && res.data ? res.data.expenses : []
+  const categories = res.success && res.data ? res.data.categories : []
 
   return (
     <div className="space-y-6">
@@ -17,8 +18,8 @@ export default async function ExpensesPage() {
       </div>
 
       <ExpensesClient 
-        initialExpenses={expenses || []} 
-        categories={categories || []} 
+        initialExpenses={expenses} 
+        categories={categories} 
       />
     </div>
   )
