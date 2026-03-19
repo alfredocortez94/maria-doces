@@ -1,5 +1,12 @@
 import { SignJWT, jwtVerify } from "jose"
 
+// 🟡 FIX: Explicit payload type — was `any`, allowing sensitive fields to accidentally end up in JWT
+export type JWTPayload = {
+  sub: string
+  email: string
+  role: string
+}
+
 function getSecret(): Uint8Array {
   const secret = process.env.JWT_SECRET
   if (!secret) {
@@ -11,7 +18,7 @@ function getSecret(): Uint8Array {
   return new TextEncoder().encode(secret)
 }
 
-export async function signToken(payload: any) {
+export async function signToken(payload: JWTPayload) {
   return new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()

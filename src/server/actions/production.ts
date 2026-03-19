@@ -252,13 +252,18 @@ export async function editProductionBatch(batchId: string, newQuantity: number) 
       if (stockErrors.length > 0) return { success: false, error: stockErrors.join(" | ") }
     }
 
+    // 🟡 FIX: Pre-load all ingredients BEFORE the transaction to avoid N+1 (one findUnique per item inside tx)
+    const ingredientIds = batch.recipe.items.map(i => i.ingredientId)
+    const ingredients = await prisma.ingredient.findMany({ where: { id: { in: ingredientIds } } })
+    const ingMap = new Map(ingredients.map(i => [i.id, i]))
+
     await prisma.$transaction(async (tx) => {
       let extraCost = 0
 
       for (const item of batch.recipe.items) {
         const qtyToChange = item.quantity * diffMultiplier
-        const ing = await tx.ingredient.findUnique({ where: { id: item.ingredientId } })
-        if (!ing) throw new Error("Ingrediente sumiu da base.")
+        const ing = ingMap.get(item.ingredientId)
+        if (!ing) throw new Error(`Ingrediente ${item.ingredientId} não encontrado.`)
 
         extraCost += qtyToChange * ing.unitCost
 
@@ -271,7 +276,7 @@ export async function editProductionBatch(batchId: string, newQuantity: number) 
           data: {
             ingredientId: item.ingredientId,
             type: quantityDiff > 0 ? "PROD_USE" : "ADJUST",
-            quantity: Math.abs(qtyToChange), // This schema might treat uses as absolute values but decrement happens above
+            quantity: Math.abs(qtyToChange),
             notes: `Edição de lote ${batchId}: Ajuste de ${qtyToChange > 0 ? '-' : '+'}${Math.abs(qtyToChange).toFixed(2)}`
           }
         })
@@ -306,7 +311,7 @@ export async function editProductionBatch(batchId: string, newQuantity: number) 
     return { success: true }
   } catch (error: any) {
     console.error("[Production] Erro na edição:", error)
-    return { success: false, error: "Erro ao editar lote." }
+    return { success: false, error: "Erro ao editar lote: " + error.message }
   }
 }
 

@@ -33,6 +33,17 @@ export type SaleCartItem = {
   unitSellPrice: number;
 }
 
+// Internal type for sale processing — not exported (not part of API contract)
+type SaleSnapshotItem = {
+  flavorId: string
+  flavorName: string
+  quantity: number
+  availableQty: number
+  unitSellPrice: number
+  unitCostAtSaleTime: number
+  totalMarginLiquid: number
+}
+
 export async function processSaleCheckout(cart: SaleCartItem[], paymentMethod: string, discount: number = 0, notes?: string) {
   try {
     // ✅ FIX S3: Verificar autenticação
@@ -52,8 +63,8 @@ export async function processSaleCheckout(cart: SaleCartItem[], paymentMethod: s
     })
     const flavorMap = new Map(flavors.map(f => [f.id, f]))
 
-    // Preparar snapshot dos itens
-    const snapshotItemsData: any[] = []
+    // 🟡 FIX: Typed snapshot array — was `any[]`
+    const snapshotItemsData: SaleSnapshotItem[] = []
     let totalGrossAmount = 0
 
     for (const item of cart) {

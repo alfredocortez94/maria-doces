@@ -65,7 +65,8 @@ export interface ProductionBatch {
   date: string | Date
   notes: string | null
   flavor: { id: string; name: string }
-  recipe: {
+  // recipe is only included when explicitly queried (edit/delete actions use Prisma directly)
+  recipe?: {
     id: string
     yieldUnits: number
     items: { ingredientId: string; quantity: number; unitCost: number }[]

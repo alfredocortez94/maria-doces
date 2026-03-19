@@ -80,6 +80,8 @@ export async function editFlavor(id: string, formData: FormData) {
 
 export async function toggleFlavorActive(id: string, currentStatus: boolean) {
   try {
+    // 🔴 FIX: requireAuth was missing — any caller could toggle flavor status
+    await requireAuth()
     await prisma.flavor.update({
       where: { id },
       data: { active: !currentStatus }
@@ -94,17 +96,14 @@ export async function toggleFlavorActive(id: string, currentStatus: boolean) {
 export async function deleteFlavor(id: string) {
   try {
     await requireAuth()
-    
-    // Deleta o estoque de produto final primeiro
-    await prisma.finishedProductStock.deleteMany({
-      where: { flavorId: id }
+
+    // 🔴 FIX: Previously two separate non-atomic queries. If flavor.delete failed,
+    // the FinishedProductStock was already deleted — data inconsistency. Now atomic.
+    await prisma.$transaction(async (tx) => {
+      await tx.finishedProductStock.deleteMany({ where: { flavorId: id } })
+      await tx.flavor.delete({ where: { id } })
     })
-    
-    // Deleta o sabor propriamente dito cascateando
-    await prisma.flavor.delete({
-      where: { id }
-    })
-    
+
     revalidatePath("/sabores")
     return { success: true }
   } catch (error: any) {

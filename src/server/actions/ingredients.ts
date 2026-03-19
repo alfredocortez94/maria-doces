@@ -37,31 +37,27 @@ export async function createIngredient(formData: FormData) {
       return { success: false, error: "Nome e Unidade de Medida são obrigatórios." }
     }
 
-    const ingredient = await prisma.ingredient.create({
-      data: {
-        name,
-        category,
-        unitMeasure,
-        minStock,
-        currentStock,
-        unitCost,
-        supplier,
-      }
-    })
-
-    // Se criou direto com estoque inicial, devemos lançar um "movement" de entrada inicial? 
-    // Por simplicidade no MVP, faremos se for maior que > 0
-    if (currentStock > 0) {
-      await prisma.ingredientStockMovement.create({
-        data: {
-          ingredientId: ingredient.id,
-          type: "IN",
-          quantity: currentStock,
-          unitCostAtTransaction: unitCost,
-          notes: "Lançamento inicial de estoque."
-        }
+    // 🟡 FIX: Wrapped in $transaction — previously ingredient.create and stock movement
+    // were separate queries. If movement failed, ingredient existed with no audit history.
+    const ingredient = await prisma.$transaction(async (tx) => {
+      const created = await tx.ingredient.create({
+        data: { name, category, unitMeasure, minStock, currentStock, unitCost, supplier }
       })
-    }
+
+      if (currentStock > 0) {
+        await tx.ingredientStockMovement.create({
+          data: {
+            ingredientId: created.id,
+            type: "IN",
+            quantity: currentStock,
+            unitCostAtTransaction: unitCost,
+            notes: "Lançamento inicial de estoque."
+          }
+        })
+      }
+
+      return created
+    })
 
     revalidatePath("/ingredientes")
     return { success: true, data: ingredient }
@@ -87,14 +83,7 @@ export async function editIngredient(id: string, formData: FormData) {
 
     const ingredient = await prisma.ingredient.update({
       where: { id },
-      data: {
-        name,
-        category,
-        unitMeasure,
-        minStock,
-        unitCost,
-        supplier,
-      }
+      data: { name, category, unitMeasure, minStock, unitCost, supplier }
     })
 
     revalidatePath("/ingredientes")
@@ -107,10 +96,7 @@ export async function editIngredient(id: string, formData: FormData) {
 export async function deleteIngredient(id: string) {
   try {
     await requireAuth()
-    // Validar se está contido em alguma receita trancaria aqui via restrict key, o Prisma vai lançar erro.
-    await prisma.ingredient.delete({
-      where: { id }
-    })
+    await prisma.ingredient.delete({ where: { id } })
     revalidatePath("/ingredientes")
     return { success: true }
   } catch (error: any) {
@@ -123,20 +109,14 @@ export async function deleteIngredient(id: string) {
 // -------------------------------------------------------------
 
 export async function registerStockEntry(ingredientId: string, quantity: number, totalBilledCost: number) {
-  "use server"
+  // 🟢 FIX: Removed duplicate "use server" directive (file is already marked "use server")
   try {
-    // Custo Medio Ponderado MVP - Como calcular o unitCost "hoje"
-    // Se comprei 1 Caixa de leite condensado custando 15 reais (totalBilledCost = 15) mas a caixa vem 395(quantity=395 unit=g).
-    // unitCostTransaction = 15 / 395 = 0.0379 reais por grama.
     const unitCostAtTx = totalBilledCost / quantity
 
     const ingredient = await prisma.ingredient.findUnique({ where: { id: ingredientId } })
-    if(!ingredient) throw new Error("Ingrediente não encontrado")
+    if (!ingredient) throw new Error("Ingrediente não encontrado")
 
     const newStock = ingredient.currentStock + quantity
-    
-    // Atualiza para o "Last Cost" (Custo de Reposição Recente). Pra DRE/MVP é a visão mais crua e segura contra inflação.
-    // Futuro: CMP = ((oldStock * oldUnit) + (qty * txUnit)) / newStock
 
     await prisma.$transaction([
       prisma.ingredientStockMovement.create({
@@ -152,7 +132,7 @@ export async function registerStockEntry(ingredientId: string, quantity: number,
         where: { id: ingredientId },
         data: {
           currentStock: newStock,
-          unitCost: unitCostAtTx // Atualiza a pauta de TODOS OS SABORES que usam de imediato (motor de regras!)
+          unitCost: unitCostAtTx
         }
       })
     ])
@@ -160,6 +140,6 @@ export async function registerStockEntry(ingredientId: string, quantity: number,
     revalidatePath("/ingredientes")
     return { success: true }
   } catch (error: any) {
-     return { success: false, error: error.message }
+    return { success: false, error: error.message }
   }
 }
