@@ -28,7 +28,7 @@ export async function createIngredient(formData: FormData) {
     const name = formData.get("name") as string
     const category = formData.get("category") as string
     const unitMeasure = formData.get("unitMeasure") as string
-    const minStock = parseFloat(formData.get("minStock") as string)
+    const minStock = parseFloat(formData.get("minStock") as string) || 0
     const currentStock = parseFloat(formData.get("currentStock") as string) || 0
     const unitCost = parseFloat(formData.get("unitCost") as string) || 0
     const supplier = formData.get("supplier") as string
