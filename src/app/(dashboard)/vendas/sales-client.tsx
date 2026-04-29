@@ -38,7 +38,6 @@ export function SalesClient({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [showConfirm, setShowConfirm] = useState(false)
-  // Paginação do histórico
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
 
   const filteredFlavors = availableFlavors.filter(f =>
@@ -76,7 +75,7 @@ export function SalesClient({
     const res = await processSaleCheckout(payload, paymentMethod, discount || 0, "Venda PDV")
     setIsSubmitting(false)
     if (res.success) {
-      toast.success(`Venda de ${money(finalTotal)} registrada! 🎉`)
+      toast.success(`Venda de ${money(finalTotal)} registrada!`)
       setCart([])
       setDiscount(0)
     } else {
@@ -91,35 +90,55 @@ export function SalesClient({
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="text-amber-500" size={20} /> Confirmar Venda
+              <AlertTriangle size={20} style={{ color: "oklch(0.72 0.14 65)" }} />
+              Confirmar Venda
             </DialogTitle>
             <DialogDescription>Revise o pedido. O estoque será deduzido imediatamente.</DialogDescription>
           </DialogHeader>
-          <div className="bg-slate-50 rounded-lg p-4 space-y-2 text-sm my-2">
+          <div
+            className="rounded-xl p-4 space-y-2 text-sm my-2"
+            style={{ background: "oklch(0.96 0.008 75)", border: "1px solid oklch(0.91 0.015 70)" }}
+          >
             {cart.map(item => (
               <div key={item.flavorId} className="flex justify-between">
-                <span className="text-slate-700">{item.name} <span className="text-slate-400">× {item.quantity}</span></span>
-                <span className="font-medium">{money(item.unitSellPrice * item.quantity)}</span>
+                <span style={{ color: "oklch(0.32 0.04 30)" }}>
+                  {item.name}{" "}
+                  <span style={{ color: "oklch(0.55 0.02 30)" }}>× {item.quantity}</span>
+                </span>
+                <span className="font-medium" style={{ color: "oklch(0.28 0.04 30)" }}>
+                  {money(item.unitSellPrice * item.quantity)}
+                </span>
               </div>
             ))}
-            <div className="border-t border-slate-200 pt-2 mt-2 space-y-1">
+            <div
+              className="pt-2 mt-2 space-y-1"
+              style={{ borderTop: "1px solid oklch(0.88 0.015 70)" }}
+            >
               {discount > 0 && (
-                <div className="flex justify-between text-rose-600 text-sm">
+                <div className="flex justify-between text-sm" style={{ color: "oklch(0.52 0.22 350)" }}>
                   <span>Desconto</span><span>- {money(discount)}</span>
                 </div>
               )}
               <div className="flex justify-between font-bold text-base">
-                <span>Total</span><span className="text-pink-600">{money(finalTotal)}</span>
+                <span style={{ color: "oklch(0.28 0.04 30)" }}>Total</span>
+                <span style={{ color: "oklch(0.52 0.22 350)" }}>{money(finalTotal)}</span>
               </div>
-              <div className="flex justify-between text-slate-500 text-xs items-center gap-1">
+              <div className="flex justify-between text-xs items-center gap-1" style={{ color: "oklch(0.55 0.02 30)" }}>
                 <span>Pagamento</span>
-                <span className="flex items-center gap-1">{PAYMENT_LABELS[paymentMethod]?.icon} {PAYMENT_LABELS[paymentMethod]?.label}</span>
+                <span className="flex items-center gap-1">
+                  {PAYMENT_LABELS[paymentMethod]?.icon}{" "}
+                  {PAYMENT_LABELS[paymentMethod]?.label}
+                </span>
               </div>
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowConfirm(false)}>Corrigir</Button>
-            <Button className="bg-pink-600 hover:bg-pink-700" onClick={handleConfirmedCheckout}>
+            <Button
+              onClick={handleConfirmedCheckout}
+              style={{ background: "oklch(0.52 0.22 350)" }}
+              className="text-white hover:opacity-90"
+            >
               <CheckCircle2 size={16} className="mr-2" /> Confirmar
             </Button>
           </DialogFooter>
@@ -127,50 +146,117 @@ export function SalesClient({
       </Dialog>
 
       {/* Tabs PDV / Histórico */}
-      <div className="flex gap-1 bg-slate-100 p-1 rounded-xl w-fit mb-4">
-        <button
-          onClick={() => setActiveTab("pdv")}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === "pdv" ? "bg-white shadow text-slate-800" : "text-slate-500 hover:text-slate-700"}`}
-        >
-          <ShoppingCart size={14} className="inline mr-2" />Frente de Caixa (PDV)
-        </button>
-        <button
-          onClick={() => setActiveTab("history")}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === "history" ? "bg-white shadow text-slate-800" : "text-slate-500 hover:text-slate-700"}`}
-        >
-          <ClipboardList size={14} className="inline mr-2" />Histórico de Vendas
-          <span className="ml-2 bg-slate-200 text-slate-600 text-xs px-1.5 py-0.5 rounded-full">{recentSales.length}</span>
-        </button>
+      <div
+        className="flex gap-1 p-1 rounded-xl w-fit mb-4"
+        style={{ background: "oklch(0.93 0.012 70)" }}
+      >
+        {[
+          { key: "pdv", label: "Frente de Caixa (PDV)", icon: <ShoppingCart size={14} /> },
+          { key: "history", label: "Histórico de Vendas", icon: <ClipboardList size={14} />, badge: recentSales.length },
+        ].map(tab => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key as "pdv" | "history")}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer"
+            style={activeTab === tab.key
+              ? { background: "oklch(0.998 0.004 80)", color: "oklch(0.22 0.04 30)", boxShadow: "0 1px 4px oklch(0.18 0.02 30 / 10%)" }
+              : { color: "oklch(0.52 0.02 30)" }
+            }
+          >
+            {tab.icon}
+            {tab.label}
+            {tab.badge !== undefined && (
+              <span
+                className="text-xs px-1.5 py-0.5 rounded-full font-bold"
+                style={{ background: "oklch(0.88 0.015 70)", color: "oklch(0.42 0.03 30)" }}
+              >
+                {tab.badge}
+              </span>
+            )}
+          </button>
+        ))}
       </div>
 
       {/* === ABA: PDV === */}
       {activeTab === "pdv" && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 min-h-[550px] h-[calc(100vh-14rem)] max-h-[900px]">
           {/* Catálogo */}
-          <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col h-full overflow-hidden">
-            <div className="p-4 border-b border-slate-200 bg-slate-50">
+          <div
+            className="lg:col-span-2 rounded-xl flex flex-col h-full overflow-hidden shadow-sm"
+            style={{ background: "oklch(0.998 0.004 80)", border: "1px solid oklch(0.91 0.015 70)" }}
+          >
+            <div
+              className="p-4"
+              style={{ borderBottom: "1px solid oklch(0.91 0.015 70)", background: "oklch(0.96 0.008 75)" }}
+            >
               <div className="relative">
-                <Search className="absolute left-3 top-3 text-slate-400" size={18} />
-                <Input placeholder="Buscar sabor..." className="pl-10 h-10 bg-white" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+                <Search
+                  className="absolute left-3 top-1/2 -translate-y-1/2"
+                  size={16}
+                  style={{ color: "oklch(0.55 0.03 30)" }}
+                />
+                <Input
+                  placeholder="Buscar sabor..."
+                  className="pl-9 h-10"
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                  style={{ background: "oklch(0.998 0.004 80)" }}
+                />
               </div>
             </div>
             <div className="flex-1 overflow-y-auto p-4">
               {filteredFlavors.length === 0 ? (
-                <div className="text-center py-16 text-slate-400">
+                <div
+                  className="text-center py-16"
+                  style={{ color: "oklch(0.55 0.02 30)" }}
+                >
                   <Tag size={32} className="mx-auto mb-3 opacity-30" />
                   <p className="font-medium">Nenhum geladinho com estoque disponível.</p>
-                  <p className="text-sm mt-1">Registre uma produção para repor.</p>
+                  <p className="text-sm mt-1" style={{ color: "oklch(0.62 0.02 30)" }}>
+                    Registre uma produção para repor.
+                  </p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {filteredFlavors.map(flavor => (
-                    <div key={flavor.id} onClick={() => addToCart(flavor)}
-                      className="border border-slate-200 rounded-xl p-4 cursor-pointer hover:border-pink-400 hover:shadow-md transition-all group active:scale-95 bg-white select-none relative overflow-hidden">
-                      <div className="absolute top-0 right-0 bg-slate-100 text-xs px-2 py-1 font-bold text-slate-500 rounded-bl-lg">
+                    <div
+                      key={flavor.id}
+                      onClick={() => addToCart(flavor)}
+                      className="rounded-xl p-4 cursor-pointer transition-all group active:scale-95 select-none relative overflow-hidden"
+                      style={{
+                        background: "oklch(0.998 0.004 80)",
+                        border: "1px solid oklch(0.91 0.015 70)",
+                      }}
+                      onMouseEnter={e => {
+                        (e.currentTarget as HTMLDivElement).style.border = "1px solid oklch(0.72 0.18 350 / 60%)"
+                        ;(e.currentTarget as HTMLDivElement).style.boxShadow = "0 4px 16px oklch(0.52 0.22 350 / 12%)"
+                      }}
+                      onMouseLeave={e => {
+                        (e.currentTarget as HTMLDivElement).style.border = "1px solid oklch(0.91 0.015 70)"
+                        ;(e.currentTarget as HTMLDivElement).style.boxShadow = ""
+                      }}
+                    >
+                      <div
+                        className="absolute top-0 right-0 text-xs px-2 py-1 font-bold rounded-bl-lg"
+                        style={{
+                          background: "oklch(0.93 0.012 70)",
+                          color: "oklch(0.45 0.05 65)",
+                        }}
+                      >
                         {flavor.stock?.quantity ?? 0} un
                       </div>
-                      <h4 className="font-semibold text-slate-800 group-hover:text-pink-700 mt-2 leading-tight pr-8 text-sm">{flavor.name}</h4>
-                      <p className="text-pink-600 font-bold mt-2 select-none text-sm">{money(flavor.suggestedSellPrice)}</p>
+                      <h4
+                        className="font-semibold mt-2 leading-tight pr-8 text-sm transition-colors"
+                        style={{ color: "oklch(0.28 0.04 30)", fontFamily: "var(--font-display)" }}
+                      >
+                        {flavor.name}
+                      </h4>
+                      <p
+                        className="font-bold mt-2 text-sm"
+                        style={{ color: "oklch(0.52 0.22 350)" }}
+                      >
+                        {money(flavor.suggestedSellPrice)}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -179,58 +265,149 @@ export function SalesClient({
           </div>
 
           {/* Carrinho */}
-          <div className="bg-slate-900 rounded-xl flex flex-col h-full ring-1 ring-slate-800 shadow-xl overflow-hidden">
-            <div className="p-4 border-b border-slate-800 bg-slate-950 flex justify-between items-center">
-              <h3 className="text-pink-400 font-bold flex items-center gap-2"><ShoppingCart size={18} /> Carrinho</h3>
-              <span className="bg-pink-500/20 text-pink-300 text-xs px-2 py-1 rounded-full font-bold">{totalItens} un</span>
+          <div
+            className="rounded-xl flex flex-col h-full shadow-xl overflow-hidden"
+            style={{
+              background: "linear-gradient(175deg, oklch(0.27 0.10 348) 0%, oklch(0.19 0.07 338) 100%)",
+              border: "1px solid oklch(1 0 0 / 8%)",
+            }}
+          >
+            <div
+              className="p-4 flex justify-between items-center"
+              style={{ borderBottom: "1px solid oklch(1 0 0 / 10%)", background: "oklch(1 0 0 / 4%)" }}
+            >
+              <h3
+                className="font-bold flex items-center gap-2 text-sm"
+                style={{ color: "oklch(0.90 0.10 65)", fontFamily: "var(--font-display)" }}
+              >
+                <ShoppingCart size={16} /> Carrinho
+              </h3>
+              <span
+                className="text-xs px-2 py-1 rounded-full font-bold"
+                style={{ background: "oklch(0.76 0.12 65 / 20%)", color: "oklch(0.88 0.10 65)" }}
+              >
+                {totalItens} un
+              </span>
             </div>
+
             <div className="flex-1 overflow-y-auto p-3 space-y-2">
-              {cart.length === 0 && <div className="text-slate-500 text-sm text-center pt-10">Toque num sabor para começar.</div>}
+              {cart.length === 0 && (
+                <div className="text-center pt-10 text-sm" style={{ color: "oklch(1 0 0 / 30%)" }}>
+                  Toque num sabor para começar.
+                </div>
+              )}
               {cart.map(item => (
-                <div key={item.flavorId} className="bg-slate-800 rounded-lg p-3 flex flex-col gap-2 relative">
+                <div
+                  key={item.flavorId}
+                  className="rounded-xl p-3 flex flex-col gap-2 relative"
+                  style={{ background: "oklch(1 0 0 / 8%)", border: "1px solid oklch(1 0 0 / 10%)" }}
+                >
                   <div className="flex justify-between items-start pr-6">
-                    <span className="text-sm font-medium text-slate-200 leading-tight">{item.name}</span>
-                    <span className="text-pink-400 font-bold text-sm shrink-0">{money(item.unitSellPrice * item.quantity)}</span>
+                    <span className="text-sm font-medium leading-tight" style={{ color: "oklch(0.95 0.01 0)" }}>
+                      {item.name}
+                    </span>
+                    <span className="font-bold text-sm shrink-0" style={{ color: "oklch(0.88 0.10 65)" }}>
+                      {money(item.unitSellPrice * item.quantity)}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button onClick={() => updateQty(item.flavorId, item.quantity - 1)} className="w-7 h-7 rounded bg-slate-700 text-slate-300 hover:bg-slate-600 font-bold text-sm">-</button>
-                    <span className="w-8 text-center text-white font-medium text-sm">{item.quantity}</span>
-                    <button onClick={() => updateQty(item.flavorId, item.quantity + 1)} className="w-7 h-7 rounded bg-slate-700 text-slate-300 hover:bg-slate-600 font-bold text-sm">+</button>
-                    <span className="text-xs text-slate-500 ml-1">× {money(item.unitSellPrice)}</span>
+                    <button
+                      onClick={() => updateQty(item.flavorId, item.quantity - 1)}
+                      className="w-7 h-7 rounded-lg font-bold text-sm transition-colors cursor-pointer"
+                      style={{ background: "oklch(1 0 0 / 10%)", color: "oklch(0.90 0.01 0)" }}
+                    >−</button>
+                    <span className="w-8 text-center font-medium text-sm" style={{ color: "oklch(1 0 0)" }}>
+                      {item.quantity}
+                    </span>
+                    <button
+                      onClick={() => updateQty(item.flavorId, item.quantity + 1)}
+                      className="w-7 h-7 rounded-lg font-bold text-sm transition-colors cursor-pointer"
+                      style={{ background: "oklch(1 0 0 / 10%)", color: "oklch(0.90 0.01 0)" }}
+                    >+</button>
+                    <span className="text-xs ml-1" style={{ color: "oklch(1 0 0 / 35%)" }}>
+                      × {money(item.unitSellPrice)}
+                    </span>
                   </div>
-                  <button onClick={() => updateQty(item.flavorId, 0)} className="absolute top-2 right-2 text-slate-500 hover:text-red-400"><XCircle size={15} /></button>
+                  <button
+                    onClick={() => updateQty(item.flavorId, 0)}
+                    className="absolute top-2 right-2 transition-colors cursor-pointer"
+                    style={{ color: "oklch(1 0 0 / 25%)" }}
+                    onMouseEnter={e => (e.currentTarget.style.color = "oklch(0.65 0.22 27)")}
+                    onMouseLeave={e => (e.currentTarget.style.color = "oklch(1 0 0 / 25%)")}
+                  >
+                    <XCircle size={15} />
+                  </button>
                 </div>
               ))}
             </div>
-            <div className="p-4 bg-slate-950 border-t border-slate-800 space-y-3 shrink-0">
+
+            <div
+              className="p-4 space-y-3 shrink-0"
+              style={{ borderTop: "1px solid oklch(1 0 0 / 10%)", background: "oklch(1 0 0 / 4%)" }}
+            >
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <Label className="text-slate-400 text-xs mb-1 block">Pagamento</Label>
+                  <Label className="text-xs mb-1 block" style={{ color: "oklch(1 0 0 / 45%)" }}>Pagamento</Label>
                   <select
                     value={paymentMethod}
                     onChange={e => setPaymentMethod(e.target.value)}
-                    className="w-full h-9 px-2 rounded-md bg-slate-800 border-none text-white text-sm cursor-pointer focus:outline-none focus:ring-1 focus:ring-pink-500"
+                    className="w-full h-9 px-2 rounded-lg text-sm cursor-pointer focus:outline-none"
+                    style={{
+                      background: "oklch(1 0 0 / 10%)",
+                      border: "1px solid oklch(1 0 0 / 12%)",
+                      color: "oklch(0.95 0.01 0)",
+                    }}
                   >
-                    <option value="PIX">PIX</option>
-                    <option value="CREDIT">Cartão de Crédito</option>
-                    <option value="DEBIT">Cartão de Débito</option>
-                    <option value="CASH">Dinheiro</option>
+                    <option value="PIX" style={{ background: "#2a1220" }}>PIX</option>
+                    <option value="CREDIT" style={{ background: "#2a1220" }}>Cartão de Crédito</option>
+                    <option value="DEBIT" style={{ background: "#2a1220" }}>Cartão de Débito</option>
+                    <option value="CASH" style={{ background: "#2a1220" }}>Dinheiro</option>
                   </select>
                 </div>
                 <div>
-                  <Label className="text-slate-400 text-xs mb-1 block">Desconto (R$)</Label>
-                  <Input type="number" step="0.01" value={discount || ''} onChange={e => setDiscount(parseFloat(e.target.value) || 0)} className="bg-slate-800 border-none h-9 text-slate-200 text-right text-sm" placeholder="0,00" />
+                  <Label className="text-xs mb-1 block" style={{ color: "oklch(1 0 0 / 45%)" }}>Desconto (R$)</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={discount || ''}
+                    onChange={e => setDiscount(parseFloat(e.target.value) || 0)}
+                    className="h-9 text-right text-sm"
+                    placeholder="0,00"
+                    style={{
+                      background: "oklch(1 0 0 / 10%)",
+                      border: "1px solid oklch(1 0 0 / 12%)",
+                      color: "oklch(0.95 0.01 0)",
+                    }}
+                  />
                 </div>
               </div>
-              <div className="flex justify-between items-center bg-pink-950 p-3 rounded-lg border border-pink-900">
-                <span className="text-pink-200 font-medium text-sm">Total</span>
-                <span className="text-xl font-bold text-pink-400">{money(finalTotal)}</span>
+
+              <div
+                className="flex justify-between items-center p-3 rounded-xl"
+                style={{ background: "oklch(0.76 0.12 65 / 15%)", border: "1px solid oklch(0.76 0.12 65 / 25%)" }}
+              >
+                <span className="font-medium text-sm" style={{ color: "oklch(0.90 0.10 65)" }}>Total</span>
+                <span
+                  className="text-xl font-black"
+                  style={{ color: "oklch(0.90 0.10 65)", fontFamily: "var(--font-display)" }}
+                >
+                  {money(finalTotal)}
+                </span>
               </div>
-              <Button className="w-full h-11 bg-pink-600 hover:bg-pink-500 text-white font-bold shadow-lg shadow-pink-900/40"
+
+              <button
+                className="w-full h-11 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
                 disabled={cart.length === 0 || isSubmitting}
-                onClick={() => setShowConfirm(true)}>
-                {isSubmitting ? "Processando..." : "Finalizar Compra"} <CheckCircle2 size={16} className="ml-2" />
-              </Button>
+                onClick={() => setShowConfirm(true)}
+                style={{
+                  background: "linear-gradient(135deg, oklch(0.52 0.22 350), oklch(0.57 0.22 345))",
+                  color: "white",
+                  boxShadow: "0 4px 20px oklch(0.52 0.22 350 / 35%)",
+                }}
+              >
+                {isSubmitting ? "Processando..." : "Finalizar Compra"}
+                <CheckCircle2 size={16} />
+              </button>
             </div>
           </div>
         </div>
@@ -238,14 +415,28 @@ export function SalesClient({
 
       {/* === ABA: HISTÓRICO === */}
       {activeTab === "history" && (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="p-4 border-b border-slate-100 flex items-center gap-2 bg-slate-50">
-            <ClipboardList className="text-slate-500" size={18} />
-            <h3 className="font-semibold text-slate-800">Histórico de Vendas</h3>
-            <span className="ml-auto text-xs text-slate-400">Últimas {recentSales.length} vendas</span>
+        <div
+          className="rounded-xl overflow-hidden shadow-sm"
+          style={{ background: "oklch(0.998 0.004 80)", border: "1px solid oklch(0.91 0.015 70)" }}
+        >
+          <div
+            className="p-4 flex items-center gap-2"
+            style={{ borderBottom: "1px solid oklch(0.91 0.015 70)", background: "oklch(0.96 0.008 75)" }}
+          >
+            <ClipboardList size={18} style={{ color: "oklch(0.52 0.22 350)" }} />
+            <h3
+              className="font-semibold"
+              style={{ color: "oklch(0.22 0.04 30)", fontFamily: "var(--font-display)" }}
+            >
+              Histórico de Vendas
+            </h3>
+            <span className="ml-auto text-xs" style={{ color: "oklch(0.55 0.02 30)" }}>
+              Últimas {recentSales.length} vendas
+            </span>
           </div>
+
           {recentSales.length === 0 ? (
-            <div className="text-center py-16 text-slate-400">
+            <div className="text-center py-16" style={{ color: "oklch(0.55 0.02 30)" }}>
               <DollarSign size={32} className="mx-auto mb-3 opacity-30" />
               <p className="font-medium">Nenhuma venda registrada.</p>
               <p className="text-sm mt-1">Registre a primeira venda no PDV ao lado.</p>
@@ -254,7 +445,7 @@ export function SalesClient({
             <>
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-slate-50 hover:bg-slate-50">
+                  <TableRow style={{ background: "oklch(0.96 0.008 75)" }}>
                     <TableHead>Data / Hora</TableHead>
                     <TableHead>Itens Vendidos</TableHead>
                     <TableHead>Pagamento</TableHead>
@@ -264,29 +455,36 @@ export function SalesClient({
                 </TableHeader>
                 <TableBody>
                   {visibleSales.map(sale => (
-                    <TableRow key={sale.id} className="hover:bg-rose-50/30">
-                      <TableCell className="text-slate-500 text-sm whitespace-nowrap">
+                    <TableRow
+                      key={sale.id}
+                      style={{ borderBottom: "1px solid oklch(0.93 0.012 70)" }}
+                    >
+                      <TableCell className="text-sm whitespace-nowrap" style={{ color: "oklch(0.52 0.02 30)" }}>
                         {format(new Date(sale.saleDate), "dd/MM/yy 'às' HH:mm", { locale: ptBR })}
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
                           {sale.items.map(item => (
-                            <span key={item.id} className="bg-rose-50 text-rose-700 text-xs px-2 py-0.5 rounded-full font-medium">
+                            <span
+                              key={item.id}
+                              className="text-xs px-2 py-0.5 rounded-full font-medium"
+                              style={{ background: "oklch(0.94 0.06 350 / 50%)", color: "oklch(0.45 0.18 350)" }}
+                            >
                               {item.quantity}× {item.flavor.name}
                             </span>
                           ))}
                         </div>
                       </TableCell>
                       <TableCell>
-                        <span className="flex items-center gap-1 text-sm text-slate-600">
+                        <span className="flex items-center gap-1 text-sm" style={{ color: "oklch(0.42 0.03 30)" }}>
                           {PAYMENT_LABELS[sale.paymentMethod ?? ""]?.icon}
                           {PAYMENT_LABELS[sale.paymentMethod ?? ""]?.label ?? sale.paymentMethod}
                         </span>
                       </TableCell>
-                      <TableCell className="text-right text-slate-500 text-sm">
+                      <TableCell className="text-right text-sm" style={{ color: "oklch(0.55 0.02 30)" }}>
                         {sale.discountAmount > 0 ? `- ${money(sale.discountAmount)}` : "–"}
                       </TableCell>
-                      <TableCell className="text-right font-bold text-emerald-600">
+                      <TableCell className="text-right font-bold" style={{ color: "oklch(0.42 0.15 160)" }}>
                         <span className="flex items-center justify-end gap-1">
                           <ArrowUpRight size={14} />{money(sale.totalAmount)}
                         </span>
@@ -296,9 +494,11 @@ export function SalesClient({
                 </TableBody>
               </Table>
 
-              {/* Load More */}
               {visibleCount < recentSales.length && (
-                <div className="p-4 border-t border-slate-100 text-center">
+                <div
+                  className="p-4 text-center"
+                  style={{ borderTop: "1px solid oklch(0.91 0.015 70)" }}
+                >
                   <Button variant="outline" size="sm" onClick={() => setVisibleCount(v => v + PAGE_SIZE)}>
                     Ver mais ({recentSales.length - visibleCount} restantes)
                   </Button>

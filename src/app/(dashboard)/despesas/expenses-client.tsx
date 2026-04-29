@@ -52,9 +52,9 @@ export function ExpensesClient({ initialExpenses, categories }: { initialExpense
   }
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-[75vh]">
-      <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-        <h3 className="font-semibold text-slate-800 flex items-center gap-2"><Receipt size={18} /> Livro de Contas Pagas</h3>
+    <div className="rounded-xl shadow-sm overflow-hidden flex flex-col h-[75vh]" style={{ background: "oklch(0.998 0.004 80)", border: "1px solid oklch(0.91 0.015 70)" }}>
+      <div className="p-4 flex justify-between items-center" style={{ borderBottom: "1px solid oklch(0.91 0.015 70)", background: "oklch(0.96 0.008 75)" }}>
+        <h3 className="font-semibold flex items-center gap-2" style={{ color: "oklch(0.22 0.04 30)", fontFamily: "var(--font-display)" }}><Receipt size={18} style={{ color: "oklch(0.52 0.22 350)" }} /> Livro de Contas Pagas</h3>
         
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger>
@@ -77,7 +77,7 @@ export function ExpensesClient({ initialExpenses, categories }: { initialExpense
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <Label>Categoria <span className="text-rose-500">*</span></Label>
-                    <button type="button" onClick={() => setIsNewCat(!isNewCat)} className="text-xs text-blue-600 hover:underline">
+                    <button type="button" onClick={() => setIsNewCat(!isNewCat)} className="text-xs hover:underline cursor-pointer" style={{ color: "oklch(0.52 0.22 350)" }}>
                       {isNewCat ? "Selecionar Existente" : "Criar Nova Categoria"}
                     </button>
                   </div>
@@ -140,7 +140,7 @@ export function ExpensesClient({ initialExpenses, categories }: { initialExpense
       <div className="flex-1 overflow-auto">
         <Table>
           <TableHeader>
-            <TableRow className="bg-slate-50 hover:bg-slate-50">
+            <TableRow style={{ background: "oklch(0.96 0.008 75)" }}>
               <TableHead>Data</TableHead>
               <TableHead>Descrição</TableHead>
               <TableHead>Categoria</TableHead>
@@ -152,7 +152,7 @@ export function ExpensesClient({ initialExpenses, categories }: { initialExpense
           <TableBody>
             {initialExpenses.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-12 text-slate-400">
+                <TableCell colSpan={6} className="text-center py-12" style={{ color: "oklch(0.55 0.02 30)" }}>
                   <Receipt size={28} className="mx-auto mb-2 opacity-30" />
                   Nenhuma despesa cadastrada. Registre a primeira saída.
                 </TableCell>
@@ -160,17 +160,17 @@ export function ExpensesClient({ initialExpenses, categories }: { initialExpense
             ) : (
               initialExpenses.slice(0, visibleCount).map((exp) => (
                 <TableRow key={exp.id} className="hover:bg-rose-50/30">
-                  <TableCell className="text-slate-500 text-sm whitespace-nowrap">{format(new Date(exp.expenseDate), "dd/MM/yyyy", { locale: ptBR })}</TableCell>
+                  <TableCell className="text-sm whitespace-nowrap" style={{ color: "oklch(0.52 0.02 30)" }}>{format(new Date(exp.expenseDate), "dd/MM/yyyy", { locale: ptBR })}</TableCell>
                   <TableCell>
-                    <div className="font-medium text-slate-800">{exp.description}</div>
-                    {exp.notes && <div className="text-xs text-slate-400 mt-0.5 truncate max-w-[200px]">{exp.notes}</div>}
+                    <div className="font-medium" style={{ color: "oklch(0.28 0.04 30)" }}>{exp.description}</div>
+                    {exp.notes && <div className="text-xs mt-0.5 truncate max-w-[200px]" style={{ color: "oklch(0.55 0.02 30)" }}>{exp.notes}</div>}
                     {exp.isRecurring && <span className="text-[10px] bg-rose-100 text-rose-700 px-1.5 py-0.5 rounded uppercase mt-1 inline-block">Conta Fixa</span>}
                   </TableCell>
-                  <TableCell className="text-slate-600 text-sm">{exp.category?.name}</TableCell>
-                  <TableCell className="text-slate-400 text-xs">{exp.invoiceRef || "–"}</TableCell>
+                  <TableCell className="text-sm" style={{ color: "oklch(0.42 0.03 30)" }}>{exp.category?.name}</TableCell>
+                  <TableCell className="text-xs" style={{ color: "oklch(0.55 0.02 30)" }}>{exp.invoiceRef || "–"}</TableCell>
                   <TableCell className="text-right font-medium text-rose-600">- {money(exp.amount)}</TableCell>
                   <TableCell className="text-right">
-                    <button onClick={() => handleDelete(exp.id)} className="text-slate-400 hover:text-red-500 p-2"><Trash2 size={15} /></button>
+                    <button onClick={() => handleDelete(exp.id)} className="p-2 transition-colors cursor-pointer" style={{ color: "oklch(0.65 0.02 30)" }}><Trash2 size={15} /></button>
                   </TableCell>
                 </TableRow>
               ))
@@ -179,7 +179,7 @@ export function ExpensesClient({ initialExpenses, categories }: { initialExpense
         </Table>
         {/* Load More */}
         {visibleCount < initialExpenses.length && (
-          <div className="p-3 border-t border-slate-100 text-center">
+          <div className="p-3 text-center" style={{ borderTop: "1px solid oklch(0.91 0.015 70)" }}>
             <Button variant="outline" size="sm" onClick={() => setVisibleCount(v => v + PAGE_SIZE)}>
               Ver mais ({initialExpenses.length - visibleCount} restantes)
             </Button>

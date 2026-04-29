@@ -80,9 +80,9 @@ export function IngredientsClient({ initialData }: { initialData: any[] }) {
   }
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-      <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-        <h3 className="font-semibold text-slate-800">Catálogo de Insumos</h3>
+    <div className="rounded-xl shadow-sm overflow-hidden" style={{ background: "oklch(0.998 0.004 80)", border: "1px solid oklch(0.91 0.015 70)" }}>
+      <div className="p-4 flex justify-between items-center" style={{ borderBottom: "1px solid oklch(0.91 0.015 70)", background: "oklch(0.96 0.008 75)" }}>
+        <h3 className="font-semibold" style={{ color: "oklch(0.22 0.04 30)", fontFamily: "var(--font-display)" }}>Catálogo de Insumos</h3>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger>
             <Button className="bg-rose-500 hover:bg-rose-600 text-white gap-2 shadow-sm" type="button">
@@ -156,7 +156,7 @@ export function IngredientsClient({ initialData }: { initialData: any[] }) {
 
       <Table>
         <TableHeader>
-          <TableRow className="bg-slate-50 hover:bg-slate-50">
+          <TableRow style={{ background: "oklch(0.96 0.008 75)" }}>
             <TableHead>Ingrediente</TableHead>
             <TableHead>Categoria</TableHead>
             <TableHead className="text-right">Estoque Atual</TableHead>
@@ -173,21 +173,21 @@ export function IngredientsClient({ initialData }: { initialData: any[] }) {
             initialData.map((item) => (
               <TableRow key={item.id}>
                 <TableCell className="font-medium">{item.name}</TableCell>
-                <TableCell className="text-slate-500">{item.category || "-"}</TableCell>
+                <TableCell style={{ color: "oklch(0.52 0.02 30)" }}>{item.category || "-"}</TableCell>
                 <TableCell className="text-right font-medium">
                   <span className={item.currentStock <= item.minStock ? "text-red-500" : "text-rose-600"}>
                     {item.currentStock} {item.unitMeasure}
                   </span>
                 </TableCell>
-                <TableCell className="text-right text-slate-500">
+                <TableCell className="text-right" style={{ color: "oklch(0.52 0.02 30)" }}>
                   {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 4 }).format(item.unitCost)} / {item.unitMeasure}
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="icon" 
-                      className="h-8 w-8 text-slate-500 border-slate-200 hover:bg-slate-100"
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="h-8 w-8"
                       onClick={() => {
                         setEditingIngredient(item)
                         setIsEditOpen(true)
@@ -244,14 +244,14 @@ export function IngredientsClient({ initialData }: { initialData: any[] }) {
                 <Input id="totalCost" name="totalCost" type="number" step="0.01" placeholder="Ex: 5.50" required />
               </div>
             </div>
-            <div className="bg-blue-50 p-3 rounded-md border border-blue-100 mt-2">
-              <p className="text-xs text-blue-700">
+            <div className="p-3 rounded-xl mt-2" style={{ background: "oklch(0.96 0.06 70 / 40%)", border: "1px solid oklch(0.88 0.08 70 / 50%)" }}>
+              <p className="text-xs" style={{ color: "oklch(0.42 0.10 65)" }}>
                 <b>Regra MVP:</b> O Custo Unitário do ingrediente passará a ser regido pelo repasse direto desta nota fiscal para assegurar as margens em tempo real.
               </p>
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setIsStockOpen(false)}>Cancelar</Button>
-              <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Lançando..." : "Registrar Entrada"}</Button>
+              <Button type="submit" className="bg-rose-500 hover:bg-rose-600 text-white" disabled={isSubmitting}>{isSubmitting ? "Lançando..." : "Registrar Entrada"}</Button>
             </DialogFooter>
           </form>
         </DialogContent>

@@ -19,23 +19,19 @@ async function main() {
     process.exit(1)
   }
 
-  const existing = await prisma.user.findUnique({ where: { email } })
-  if (existing) {
-    console.log(`✅ Usuário admin já existe: ${email}`)
-    return
-  }
-
   const passwordHash = await bcrypt.hash(password, 12)
-  const user = await prisma.user.create({
-    data: {
-      name: "Administrador",
+  const user = await prisma.user.upsert({
+    where: { email },
+    update: { passwordHash },
+    create: {
+      name: "Administrador(a)",
       email,
       passwordHash,
       role: "ADMIN"
     }
   })
 
-  console.log(`\n✅ Usuário admin criado com sucesso!`)
+  console.log(`\n✅ Usuário admin atualizado/criado com sucesso!`)
   console.log(`   Email: ${user.email}`)
   console.log(`   Role:  ${user.role}\n`)
 }

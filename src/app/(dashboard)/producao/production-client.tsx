@@ -102,21 +102,22 @@ export function ProductionClient({
       
       {/* Esquerda: Novo Lote */}
       <div className="md:col-span-1">
-         <div className="bg-white rounded-xl p-6 text-slate-800 shadow-sm border border-rose-100 relative overflow-hidden">
+         <div className="rounded-xl p-6 shadow-sm relative overflow-hidden" style={{ background: "oklch(0.998 0.004 80)", border: "1px solid oklch(0.91 0.015 70)" }}>
             <div className="absolute top-0 right-0 p-4 opacity-5 text-rose-500">
                <Factory size={100} />
             </div>
             
             <h3 className="text-xl font-bold mb-1 font-mono text-rose-600">01. NOVA FORNADA</h3>
-            <p className="text-sm text-slate-500 mb-6">Aponte a produção feita na cozinha hoje.</p>
+            <p className="text-sm mb-6" style={{ color: "oklch(0.52 0.02 30)" }}>Aponte a produção feita na cozinha hoje.</p>
             
             <div className="space-y-4 mb-6 relative z-10">
                <div className="space-y-2">
-                 <Label className="text-slate-600 font-semibold">🍬 Qual sabor foi feito hoje?</Label>
+                 <Label className="font-semibold" style={{ color: "oklch(0.32 0.03 30)" }}>Qual sabor foi feito hoje?</Label>
                  <select
                    value={selectedFlavorId}
                    onChange={(e) => setSelectedFlavorId(e.target.value)}
-                   className="w-full h-12 px-3 rounded-lg border border-slate-200 bg-slate-50 text-slate-800 text-sm font-medium hover:border-rose-300 focus:outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100 transition-colors cursor-pointer"
+                   className="w-full h-12 px-3 rounded-lg text-sm font-medium focus:outline-none transition-colors cursor-pointer"
+                   style={{ border: "1px solid oklch(0.88 0.015 70)", background: "oklch(0.96 0.008 75)", color: "oklch(0.28 0.04 30)" }}
                  >
                    <option value="">-- Selecione o sabor --</option>
                    {flavorsReadyToProduce.map(f => (
@@ -132,10 +133,11 @@ export function ProductionClient({
 
                {renderPreview && (
                  <div className="space-y-2">
-                   <Label className="text-slate-600 font-semibold">Rendimento Resultante (Unidades Reais)</Label>
-                   <Input 
-                     type="number" 
-                     className="bg-slate-50 border-slate-200 h-14 text-2xl font-bold text-rose-600 hover:border-rose-300 focus-visible:ring-rose-500"
+                   <Label className="font-semibold" style={{ color: "oklch(0.32 0.03 30)" }}>Rendimento Resultante (Unidades Reais)</Label>
+                   <Input
+                     type="number"
+                     className="h-14 text-2xl font-bold focus-visible:ring-rose-500"
+                     style={{ background: "oklch(0.96 0.008 75)", border: "1px solid oklch(0.88 0.015 70)", color: "oklch(0.52 0.22 350)" }}
                      min={1} 
                      value={batchQuantity || ''} 
                      onChange={(e) => setBatchQuantity(parseInt(e.target.value) || 0)}
@@ -177,16 +179,16 @@ export function ProductionClient({
 
       {/* Direita: Historico */}
       <div className="md:col-span-2">
-         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden h-full flex flex-col">
-           <div className="p-4 border-b border-slate-200 bg-slate-50 flex items-center gap-2">
-              <PackageCheck className="text-slate-500" />
-              <h3 className="font-semibold text-slate-800">Histórico de Ordens Produzidas</h3>
+         <div className="rounded-xl shadow-sm overflow-hidden h-full flex flex-col" style={{ background: "oklch(0.998 0.004 80)", border: "1px solid oklch(0.91 0.015 70)" }}>
+           <div className="p-4 flex items-center gap-2" style={{ borderBottom: "1px solid oklch(0.91 0.015 70)", background: "oklch(0.96 0.008 75)" }}>
+              <PackageCheck size={18} style={{ color: "oklch(0.52 0.22 350)" }} />
+              <h3 className="font-semibold" style={{ color: "oklch(0.22 0.04 30)", fontFamily: "var(--font-display)" }}>Histórico de Ordens Produzidas</h3>
            </div>
            
            <div className="flex-1 overflow-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-white hover:bg-white sticky top-0 shadow-sm z-10">
+                  <TableRow className="sticky top-0 z-10" style={{ background: "oklch(0.96 0.008 75)" }}>
                     <TableHead>Data Produção</TableHead>
                     <TableHead>Sabor</TableHead>
                     <TableHead className="text-right">Un. Feitas</TableHead>
@@ -197,7 +199,7 @@ export function ProductionClient({
                 <TableBody>
                   {initialHistory.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center py-12 text-slate-400">
+                      <TableCell colSpan={5} className="text-center py-12" style={{ color: "oklch(0.55 0.02 30)" }}>
                         <PackageCheck size={28} className="mx-auto mb-2 opacity-30" />
                         Nenhum lote produzido. Faça a primeira fornada ao lado.
                       </TableCell>
@@ -205,12 +207,12 @@ export function ProductionClient({
                   ) : (
                     initialHistory.slice(0, visibleCount).map((batch) => (
                       <TableRow key={batch.id} className="hover:bg-rose-50/30">
-                        <TableCell className="text-slate-500 text-sm whitespace-nowrap">
+                        <TableCell className="text-sm whitespace-nowrap" style={{ color: "oklch(0.52 0.02 30)" }}>
                           {format(new Date(batch.date), "dd/MM/yy 'às' HH:mm", { locale: ptBR })}
                         </TableCell>
-                        <TableCell className="font-medium text-slate-800">{batch.flavor.name}</TableCell>
-                        <TableCell className="text-right font-bold text-rose-600">
-                          +{batch.quantityProduced} <span className="text-xs font-normal text-slate-400">un</span>
+                        <TableCell className="font-medium" style={{ color: "oklch(0.28 0.04 30)" }}>{batch.flavor.name}</TableCell>
+                        <TableCell className="text-right font-bold" style={{ color: "oklch(0.52 0.22 350)" }}>
+                          +{batch.quantityProduced} <span className="text-xs font-normal" style={{ color: "oklch(0.55 0.02 30)" }}>un</span>
                         </TableCell>
                         <TableCell className="text-right text-rose-600 font-medium">
                           - {money(batch.totalProductionCost)}
@@ -232,7 +234,7 @@ export function ProductionClient({
               </Table>
               {/* Load More */}
               {visibleCount < initialHistory.length && (
-                <div className="p-3 border-t border-slate-100 text-center">
+                <div className="p-3 text-center" style={{ borderTop: "1px solid oklch(0.91 0.015 70)" }}>
                   <Button variant="outline" size="sm" onClick={() => setVisibleCount(v => v + PAGE_SIZE)}>
                     Ver mais ({initialHistory.length - visibleCount} restantes)
                   </Button>

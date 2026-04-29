@@ -164,9 +164,9 @@ export function FlavorsClient({
   const liveMarginInfo = liveSellPrice > 0 ? (liveProfitUnit / liveSellPrice) * 100 : 0
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-      <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-        <h3 className="font-semibold text-slate-800 flex items-center gap-2"><IceCream2 size={18} /> Menu de Sabores</h3>
+    <div className="rounded-xl shadow-sm overflow-hidden flex flex-col" style={{ background: "oklch(0.998 0.004 80)", border: "1px solid oklch(0.91 0.015 70)" }}>
+      <div className="p-4 flex justify-between items-center" style={{ borderBottom: "1px solid oklch(0.91 0.015 70)", background: "oklch(0.96 0.008 75)" }}>
+        <h3 className="font-semibold flex items-center gap-2" style={{ color: "oklch(0.22 0.04 30)", fontFamily: "var(--font-display)" }}><IceCream2 size={18} style={{ color: "oklch(0.52 0.22 350)" }} /> Menu de Sabores</h3>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger>
             <Button className="bg-rose-500 hover:bg-rose-600 text-white gap-2 shadow-sm" type="button">
@@ -253,7 +253,7 @@ export function FlavorsClient({
 
       <Table>
         <TableHeader>
-          <TableRow className="bg-slate-50 hover:bg-slate-50">
+          <TableRow style={{ background: "oklch(0.96 0.008 75)" }}>
             <TableHead>Sabor</TableHead>
             <TableHead className="text-center">Status</TableHead>
             <TableHead className="text-right">Preço de Venda</TableHead>
@@ -265,7 +265,7 @@ export function FlavorsClient({
         <TableBody>
           {initialFlavors.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="text-center py-12 text-slate-400">
+              <TableCell colSpan={6} className="text-center py-12" style={{ color: "oklch(0.55 0.02 30)" }}>
                 <IceCream2 className="mx-auto mb-3 opacity-30" size={32} />
                 Nenhum sabor cadastrado. Clique em "Novo Sabor" para começar!
               </TableCell>
@@ -280,12 +280,12 @@ export function FlavorsClient({
               const isLowMargin = hasRecipe && margin < 30
 
               return (
-                <TableRow key={flavor.id} className={!flavor.active ? "opacity-50 bg-slate-50" : ""}>
+                <TableRow key={flavor.id} style={!flavor.active ? { opacity: 0.5, background: "oklch(0.96 0.008 75)" } : {}}>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <div>
-                        <div className="font-semibold text-slate-800">{flavor.name}</div>
-                        <div className="text-xs text-slate-400 mt-0.5">
+                        <div className="font-semibold" style={{ color: "oklch(0.28 0.04 30)" }}>{flavor.name}</div>
+                        <div className="text-xs mt-0.5" style={{ color: "oklch(0.55 0.02 30)" }}>
                           {flavor.stock?.quantity || 0} un. em estoque
                         </div>
                       </div>
@@ -293,7 +293,7 @@ export function FlavorsClient({
                   </TableCell>
                   <TableCell className="text-center">
                     {!flavor.active ? (
-                      <span className="text-xs bg-slate-100 text-slate-500 font-medium px-2 py-1 rounded-full">
+                      <span className="text-xs font-medium px-2 py-1 rounded-full" style={{ background: "oklch(0.91 0.015 70)", color: "oklch(0.45 0.02 30)" }}>
                         Inativo
                       </span>
                     ) : hasRecipe ? (
@@ -313,21 +313,21 @@ export function FlavorsClient({
                     {hasRecipe ? (
                       <span className="text-rose-600 font-medium">{money(cost)}</span>
                     ) : (
-                      <span className="text-slate-300">—</span>
+                      <span style={{ color: "oklch(0.82 0.015 70)" }}>—</span>
                     )}
                   </TableCell>
                   <TableCell className="text-right hidden md:table-cell">
                     {hasRecipe ? (
                       <div className="flex flex-col items-end">
-                        <span className={`font-semibold ${profit > 0 ? 'text-green-600' : 'text-red-500'}`}>
+                        <span className="font-semibold" style={{ color: profit > 0 ? "oklch(0.42 0.15 160)" : "oklch(0.52 0.22 27)" }}>
                           {profit > 0 ? "+" : ""}{money(profit)}
                         </span>
-                        <span className={`text-[10px] font-bold ${isLowMargin ? 'text-red-500' : 'text-slate-400'}`}>
+                        <span className="text-[10px] font-bold" style={{ color: isLowMargin ? "oklch(0.52 0.22 27)" : "oklch(0.55 0.02 30)" }}>
                           {margin.toFixed(0)}% de margem
                         </span>
                       </div>
                     ) : (
-                      <span className="text-slate-300">—</span>
+                      <span style={{ color: "oklch(0.82 0.015 70)" }}>—</span>
                     )}
                   </TableCell>
                   <TableCell className="text-right">
@@ -361,9 +361,9 @@ export function FlavorsClient({
       {/* SUPER MODAL RECEITA (O MOTOR DE PRECIFICAÇÃO) */}
       <Dialog open={isRecipeOpen} onOpenChange={setIsRecipeOpen}>
         <DialogContent className="sm:max-w-4xl max-w-[95vw] max-h-[85vh] flex flex-col p-0 overflow-hidden">
-          <DialogHeader className="p-6 border-b shrink-0 bg-slate-50">
+          <DialogHeader className="p-6 shrink-0" style={{ borderBottom: "1px solid oklch(0.91 0.015 70)", background: "oklch(0.96 0.008 75)" }}>
             <DialogTitle className="flex items-center gap-2 text-xl">
-              <Calculator className="text-blue-500"/> Ficha Técnica: {selectedFlavor?.name}
+              <Calculator style={{ color: "oklch(0.52 0.22 350)" }} /> Ficha Técnica: {selectedFlavor?.name}
             </DialogTitle>
             <DialogDescription>
               Custo Dinâmico de Engenharia. Defina exatamente o que vai nesta panela. Os preços atuais do sistema farão o resto.
@@ -381,7 +381,7 @@ export function FlavorsClient({
                  </div>
                )}
                <div>
-                  <h4 className="text-sm font-medium text-slate-800 mb-2">Adicionar Ingrediente da Despensa</h4>
+                  <h4 className="text-sm font-medium mb-2" style={{ color: "oklch(0.28 0.04 30)" }}>Adicionar Ingrediente da Despensa</h4>
                   <div className="flex gap-2">
                      <Select onValueChange={(val: any) => addIngredientLine(val)}>
                         <SelectTrigger className="w-full">
@@ -403,7 +403,7 @@ export function FlavorsClient({
 
                <div className="border rounded-lg mt-4 overflow-hidden">
                   <Table>
-                    <TableHeader className="bg-slate-50">
+                    <TableHeader style={{ background: "oklch(0.96 0.008 75)" }}>
                       <TableRow>
                         <TableHead>Ingrediente</TableHead>
                         <TableHead className="w-[120px]">Qtd Utilizada</TableHead>
@@ -413,13 +413,13 @@ export function FlavorsClient({
                     </TableHeader>
                     <TableBody>
                       {recipeItems.length === 0 && (
-                        <TableRow><TableCell colSpan={4} className="text-center text-slate-500 p-4">A receita está vazia.</TableCell></TableRow>
+                        <TableRow><TableCell colSpan={4} className="text-center p-4" style={{ color: "oklch(0.52 0.02 30)" }}>A receita está vazia.</TableCell></TableRow>
                       )}
                       {recipeItems.map(item => (
                         <TableRow key={item.ingredientId}>
-                          <TableCell className="font-medium text-slate-700 text-sm">
+                          <TableCell className="font-medium text-sm" style={{ color: "oklch(0.32 0.04 30)" }}>
                             {item.name}
-                            <div className="text-[10px] text-slate-400 font-normal">Base: {money(item.unitCost)} / {item.unitMeasure}</div>
+                            <div className="text-[10px] font-normal" style={{ color: "oklch(0.55 0.02 30)" }}>Base: {money(item.unitCost)} / {item.unitMeasure}</div>
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-1">
@@ -430,7 +430,7 @@ export function FlavorsClient({
                                 value={item.quantity || ''}
                                 onChange={(e) => updateIngredientItemQuantity(item.ingredientId, parseFloat(e.target.value) || 0)}
                               />
-                              <span className="text-xs text-slate-500">{item.unitMeasure}</span>
+                              <span className="text-xs" style={{ color: "oklch(0.52 0.02 30)" }}>{item.unitMeasure}</span>
                             </div>
                           </TableCell>
                           <TableCell className="text-right text-sm">
@@ -450,57 +450,59 @@ export function FlavorsClient({
 
             {/* Direita: Placar Analitico */}
             <div className="md:col-span-2">
-              <div className="bg-slate-900 rounded-xl p-5 text-slate-100 shadow-inner flex flex-col h-full ring-1 ring-slate-800">
-                 <h4 className="text-sm font-semibold text-pink-400 uppercase tracking-wider mb-4 border-b border-slate-700 pb-2">Painel Econômico</h4>
-                 
+              <div className="rounded-xl p-5 shadow-inner flex flex-col h-full" style={{ background: "linear-gradient(175deg, oklch(0.27 0.10 348) 0%, oklch(0.19 0.07 338) 100%)", border: "1px solid oklch(1 0 0 / 8%)" }}>
+                 <h4 className="text-sm font-semibold uppercase tracking-wider mb-4 pb-2" style={{ color: "oklch(0.88 0.10 65)", borderBottom: "1px solid oklch(1 0 0 / 12%)" }}>Painel Econômico</h4>
+
                  <div className="space-y-4 flex-1">
                     <div className="flex justify-between items-center text-sm">
-                       <span className="text-slate-400">Custo Total da Panela:</span>
-                       <span className="font-medium text-rose-300">{money(liveTotalCost)}</span>
+                       <span style={{ color: "oklch(1 0 0 / 45%)" }}>Custo Total da Panela:</span>
+                       <span className="font-medium" style={{ color: "oklch(0.88 0.10 65)" }}>{money(liveTotalCost)}</span>
                     </div>
-                    
+
                     <div>
-                       <Label className="text-slate-300 text-xs mb-1 block">Rendimento Alvo (A Panela Rende Quanto?)</Label>
-                       <Input 
-                         type="number" 
-                         value={yieldUnits} 
-                         onChange={e => setYieldUnits(parseInt(e.target.value))} 
-                         className="bg-slate-800 border-slate-700 text-white font-bold h-10" 
+                       <Label className="text-xs mb-1 block" style={{ color: "oklch(1 0 0 / 55%)" }}>Rendimento Alvo (A Panela Rende Quanto?)</Label>
+                       <Input
+                         type="number"
+                         value={yieldUnits}
+                         onChange={e => setYieldUnits(parseInt(e.target.value))}
+                         className="font-bold h-10 text-white"
+                         style={{ background: "oklch(1 0 0 / 10%)", border: "1px solid oklch(1 0 0 / 15%)" }}
                          min={1}
                        />
-                       <p className="text-[10px] text-slate-500 mt-1 mt-1">Gela dinâmico, embale quantos renderem e coloque o número.</p>
+                       <p className="text-[10px] mt-1" style={{ color: "oklch(1 0 0 / 30%)" }}>Gela dinâmico, embale quantos renderem e coloque o número.</p>
                     </div>
 
-                    <div className="h-[1px] bg-slate-800 my-4" />
+                    <div className="h-[1px] my-4" style={{ background: "oklch(1 0 0 / 12%)" }} />
 
                     <div className="flex justify-between items-center">
-                       <span className="text-slate-300 text-sm font-medium">Custo por Unidade:</span>
-                       <span className="font-bold text-xl text-white bg-slate-800 px-3 py-1 rounded-md">{money(liveUnitCost)}</span>
+                       <span className="text-sm font-medium" style={{ color: "oklch(1 0 0 / 70%)" }}>Custo por Unidade:</span>
+                       <span className="font-bold text-xl px-3 py-1 rounded-lg" style={{ color: "white", background: "oklch(1 0 0 / 12%)", fontFamily: "var(--font-display)" }}>{money(liveUnitCost)}</span>
                     </div>
 
                     <div className="flex justify-between items-center mt-2">
-                       <span className="text-slate-400 text-sm">Preço Alvo Venda:</span>
-                       <span className="font-medium text-pink-400">{money(liveSellPrice)}</span>
+                       <span className="text-sm" style={{ color: "oklch(1 0 0 / 45%)" }}>Preço Alvo Venda:</span>
+                       <span className="font-medium" style={{ color: "oklch(0.88 0.10 65)" }}>{money(liveSellPrice)}</span>
                     </div>
 
-                    <div className="bg-slate-800/80 rounded-lg p-3 border border-slate-700 mt-4">
+                    <div className="rounded-xl p-3 mt-4" style={{ background: "oklch(1 0 0 / 8%)", border: "1px solid oklch(1 0 0 / 12%)" }}>
                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-slate-300 text-xs uppercase">Margem (Lucro Líq.):</span>
-                          <span className={`font-bold text-lg ${liveMarginInfo < 40 ? 'text-orange-400' : 'text-emerald-400'}`}>
+                          <span className="text-xs uppercase" style={{ color: "oklch(1 0 0 / 55%)" }}>Margem (Lucro Líq.):</span>
+                          <span className="font-bold text-lg" style={{ color: liveMarginInfo < 40 ? "oklch(0.82 0.16 65)" : "oklch(0.78 0.16 160)" }}>
                             {liveMarginInfo.toFixed(1)}%
                           </span>
                        </div>
                        <div className="flex justify-between items-center">
-                          <span className="text-slate-400 text-xs">Lucro Líquido Real R$:</span>
-                          <span className="font-medium text-sm text-white">{money(liveProfitUnit)} un</span>
+                          <span className="text-xs" style={{ color: "oklch(1 0 0 / 40%)" }}>Lucro Líquido Real R$:</span>
+                          <span className="font-medium text-sm" style={{ color: "oklch(0.95 0.01 0)" }}>{money(liveProfitUnit)} un</span>
                        </div>
                     </div>
                  </div>
 
-                 <Button 
+                 <Button
                    onClick={handleSaveRecipe}
-                   disabled={isSubmitting} 
-                   className="w-full mt-6 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold h-12"
+                   disabled={isSubmitting}
+                   className="w-full mt-6 text-white font-bold h-12"
+                   style={{ background: "linear-gradient(135deg, oklch(0.52 0.22 350), oklch(0.57 0.22 345))", boxShadow: "0 4px 20px oklch(0.52 0.22 350 / 35%)" }}
                  >
                    {isSubmitting ? "Gravando Fotografia Sistêmica..." : "Confirmar e Aplicar Ficha"}
                  </Button>
